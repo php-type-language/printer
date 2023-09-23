@@ -88,7 +88,7 @@ class PrettyPrinter extends Printer
     protected function printClassConstMaskNode(ClassConstMaskNode $node, int $depth = 0): string
     {
         return \vsprintf('%s::%s', [
-            $this->printName($node->class, $depth),
+            $node->class->toString(),
             (string)$node->constant . '*',
         ]);
     }
@@ -100,7 +100,7 @@ class PrettyPrinter extends Printer
      */
     protected function printConstMaskNode(ConstMaskNode $node, int $depth = 0): string
     {
-        return $this->printName($node->name) . '*';
+        return $node->name->toString() . '*';
     }
 
     /**
@@ -110,7 +110,7 @@ class PrettyPrinter extends Printer
      */
     protected function printCallableTypeNode(CallableTypeNode $node, int $depth = 0): string
     {
-        $result = $this->printName($node->name);
+        $result = $node->name->toString();
 
         $arguments = [];
 
@@ -217,7 +217,7 @@ class PrettyPrinter extends Printer
      */
     protected function printNamedTypeNode(NamedTypeNode $node, int $depth = 0): string
     {
-        $result = $this->printName($node->name, $depth);
+        $result = $node->name->toString();
 
         if ($node->parameters !== null) {
             $result .= $this->printTemplateParametersNode($node->parameters, $depth);
@@ -316,19 +316,5 @@ class PrettyPrinter extends Printer
                 => $this->printShapeFieldName($field->of, $depth) . $field->name->getRawValue(),
             default => '',
         };
-    }
-
-    /**
-     * @param int<0, max> $depth
-     *
-     * @return non-empty-string
-     */
-    protected function printName(Name $name, int $depth = 0): string
-    {
-        if ($name instanceof FullQualifiedName) {
-            return \sprintf('\\%s', $name->name);
-        }
-
-        return $name->name;
     }
 }
