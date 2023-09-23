@@ -150,7 +150,7 @@ class PrettyPrinter extends Printer
             $node instanceof OutArgumentNode
                 => \rtrim($this->printCallableArgumentNode($node->of, $depth)) . '& ',
             $node instanceof VariadicArgumentNode
-                => \rtrim($this->printCallableArgumentNode($node->of, $depth)) . '... ',
+                => $this->printCallableArgumentNode($node->of, $depth) . '...',
             default => $this->print($node->getType(), $depth) . ' ',
         };
     }
