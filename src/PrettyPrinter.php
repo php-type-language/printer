@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
+use TypeLang\Parser\Node\Node;
 use TypeLang\Parser\Node\Stmt\Literal\LiteralNode;
 use TypeLang\Parser\Node\Stmt\Type\Callable\ArgumentNodeInterface;
 use TypeLang\Parser\Node\Stmt\Type\Callable\NamedArgumentNode;
@@ -25,10 +26,51 @@ use TypeLang\Parser\Node\Stmt\Type\Shape\OptionalFieldNode;
 use TypeLang\Parser\Node\Stmt\Statement;
 use TypeLang\Parser\Node\Stmt\Type\Template\ParameterNode;
 use TypeLang\Parser\Node\Stmt\Type\Template\ParametersListNode;
+use TypeLang\Parser\Node\Stmt\Type\TypeStatement;
 use TypeLang\Parser\Node\Stmt\Type\UnionTypeNode;
+use TypeLang\Parser\Traverser;
 
 class PrettyPrinter extends Printer
 {
+    /**
+     * Wrap union type (joined by "|") by whitespaces.
+     *
+     * ```
+     * $wrapUnionType = true;
+     * // Type | Some | Any
+     *
+     * $wrapUnionType = false;
+     * // Type|Some|Any
+     * ```
+     */
+    public bool $wrapUnionType = false;
+
+    /**
+     * Wrap intersection type (joined by "&") by whitespaces.
+     *
+     * ```
+     *  $wrapIntersectionType = true;
+     *  // Type & Some & Any
+     *
+     *  $wrapIntersectionType = false;
+     *  // Type&Some&Any
+     *  ```
+     */
+    public bool $wrapIntersectionType = true;
+
+    /**
+     * Add whitespace at the start of callable return type.
+     *
+     * ```
+     * $wrapCallableReturnType = true;
+     * // callable(): void
+     *
+     * $wrapCallableReturnType = false;
+     * // callable():void
+     * ```
+     */
+    public bool $wrapCallableReturnType = true;
+
     /**
      * @return non-empty-string
      */
@@ -96,14 +138,44 @@ class PrettyPrinter extends Printer
         if ($node->type !== null) {
             $returnType = $this->make($node->type);
 
-            if ($node->type instanceof LogicalTypeNode) {
+            if ($this->shouldWrapReturnType($node->type)) {
                 $returnType = \sprintf('(%s)', $returnType);
             }
 
-            $result .= \sprintf(':%s', $returnType);
+            $returnTypeFormat = $this->wrapCallableReturnType ? ': %s' : ':%s';
+            $result .= \sprintf($returnTypeFormat, $returnType);
         }
 
         return $result;
+    }
+
+    protected function shouldWrapReturnType(TypeStatement $type): bool
+    {
+        if ($type instanceof LogicalTypeNode) {
+            return true;
+        }
+
+        $visitor = Traverser::through(
+            visitor: new Traverser\ClassNameMatcherVisitor(
+                class: LogicalTypeNode::class,
+                break: static function (Node $node): bool {
+                    // Break on non-empty template parameters.
+                    $isInTemplate = $node instanceof NamedTypeNode
+                        && $node->parameters !== null
+                        && $node->parameters->list !== [];
+
+                    // Break on non-empty shape fields.
+                    $isInShape = $node instanceof NamedTypeNode
+                        && $node->fields !== null
+                        && $node->fields->list !== [];
+
+                    return $isInTemplate || $isInShape;
+                },
+            ),
+            nodes: [$type],
+        );
+
+        return $visitor->isFound();
     }
 
     /**
@@ -129,10 +201,12 @@ class PrettyPrinter extends Printer
      */
     protected function printUnionTypeNode(UnionTypeNode $node): string
     {
+        $delimiter = $this->wrapUnionType ? ' | ' : '|';
+
         try {
             /** @var non-empty-string */
             return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
-                \implode('|', [
+                \implode($delimiter, [
                     ...$this->unwrapAndPrint($node),
                 ]),
             ]);
@@ -146,10 +220,12 @@ class PrettyPrinter extends Printer
      */
     protected function printIntersectionTypeNode(IntersectionTypeNode $node): string
     {
+        $delimiter = $this->wrapIntersectionType ? ' & ' : '&';
+
         try {
             /** @var non-empty-string */
             return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
-                \implode(' & ', [
+                \implode($delimiter, [
                     ...$this->unwrapAndPrint($node),
                 ]),
             ]);
