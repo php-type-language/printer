@@ -4,88 +4,62 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
-use TypeLang\Parser\Node\FullQualifiedName;
-use TypeLang\Parser\Node\Literal\LiteralNode;
-use TypeLang\Parser\Node\Name;
-use TypeLang\Parser\Node\Stmt\Callable\ArgumentNodeInterface;
-use TypeLang\Parser\Node\Stmt\Callable\NamedArgumentNode;
-use TypeLang\Parser\Node\Stmt\Callable\OptionalArgumentNode;
-use TypeLang\Parser\Node\Stmt\Callable\OutArgumentNode;
-use TypeLang\Parser\Node\Stmt\Callable\VariadicArgumentNode;
-use TypeLang\Parser\Node\Stmt\CallableTypeNode;
-use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
-use TypeLang\Parser\Node\Stmt\ConstMaskNode;
-use TypeLang\Parser\Node\Stmt\IntersectionTypeNode;
-use TypeLang\Parser\Node\Stmt\NamedTypeNode;
-use TypeLang\Parser\Node\Stmt\Shape\FieldNodeInterface;
-use TypeLang\Parser\Node\Stmt\Shape\FieldsListNode;
-use TypeLang\Parser\Node\Stmt\Shape\NamedFieldNode;
-use TypeLang\Parser\Node\Stmt\Shape\NumericFieldNode;
-use TypeLang\Parser\Node\Stmt\Shape\OptionalFieldNode;
+use TypeLang\Parser\Node\Stmt\Literal\LiteralNode;
+use TypeLang\Parser\Node\Stmt\Type\Callable\ArgumentNodeInterface;
+use TypeLang\Parser\Node\Stmt\Type\Callable\NamedArgumentNode;
+use TypeLang\Parser\Node\Stmt\Type\Callable\OptionalArgumentNode;
+use TypeLang\Parser\Node\Stmt\Type\Callable\OutArgumentNode;
+use TypeLang\Parser\Node\Stmt\Type\Callable\VariadicArgumentNode;
+use TypeLang\Parser\Node\Stmt\Type\CallableTypeNode;
+use TypeLang\Parser\Node\Stmt\Type\ClassConstMaskNode;
+use TypeLang\Parser\Node\Stmt\Type\ClassConstNode;
+use TypeLang\Parser\Node\Stmt\Type\ConstMaskNode;
+use TypeLang\Parser\Node\Stmt\Type\IntersectionTypeNode;
+use TypeLang\Parser\Node\Stmt\Type\NamedTypeNode;
+use TypeLang\Parser\Node\Stmt\Type\Shape\FieldNodeInterface;
+use TypeLang\Parser\Node\Stmt\Type\Shape\FieldsListNode;
+use TypeLang\Parser\Node\Stmt\Type\Shape\NamedFieldNode;
+use TypeLang\Parser\Node\Stmt\Type\Shape\NumericFieldNode;
+use TypeLang\Parser\Node\Stmt\Type\Shape\OptionalFieldNode;
 use TypeLang\Parser\Node\Stmt\Statement;
-use TypeLang\Parser\Node\Stmt\Template\ParameterNode;
-use TypeLang\Parser\Node\Stmt\Template\ParametersListNode;
-use TypeLang\Parser\Node\Stmt\UnionTypeNode;
+use TypeLang\Parser\Node\Stmt\Type\Template\ParameterNode;
+use TypeLang\Parser\Node\Stmt\Type\Template\ParametersListNode;
+use TypeLang\Parser\Node\Stmt\Type\UnionTypeNode;
 
 class PrettyPrinter extends Printer
 {
-    private const DEFAULT_NEW_LINE_DELIMITER = "\n";
-
-    private const DEFAULT_INDENTION = '    ';
-
-    public function __construct(
-        private readonly string $newLine = self::DEFAULT_NEW_LINE_DELIMITER,
-        private readonly string $indention = self::DEFAULT_INDENTION,
-    ) {}
-
     /**
-     * @param int<0, max> $depth
-     *
-     * @return ($depth > 0 ? non-empty-string : string)
-     */
-    protected function prefix(int $depth = 0): string
-    {
-        return \str_repeat($this->indention, $depth);
-    }
-
-    /**
-     * @param non-empty-string $text
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function prefixed(string $text, int $depth = 0): string
-    {
-        return $this->prefix($depth) . $text;
-    }
-
-    /**
-     * @param int<0, max> $depth
-     *
-     * @return non-empty-string
-     */
-    public function print(Statement $stmt, int $depth = 0): string
+    public function make(Statement $stmt): string
     {
         return match (true) {
-            $stmt instanceof LiteralNode => $this->printLiteralNode($stmt, $depth),
-            $stmt instanceof NamedTypeNode => $this->printNamedTypeNode($stmt, $depth),
-            $stmt instanceof ClassConstMaskNode => $this->printClassConstMaskNode($stmt, $depth),
-            $stmt instanceof ConstMaskNode => $this->printConstMaskNode($stmt, $depth),
-            $stmt instanceof CallableTypeNode => $this->printCallableTypeNode($stmt, $depth),
-            $stmt instanceof UnionTypeNode => $this->printUnionTypeNode($stmt, $depth),
-            $stmt instanceof IntersectionTypeNode => $this->printIntersectionTypeNode($stmt, $depth),
+            $stmt instanceof LiteralNode => $this->printLiteralNode($stmt),
+            $stmt instanceof NamedTypeNode => $this->printNamedTypeNode($stmt),
+            $stmt instanceof ClassConstNode => $this->printClassConstNode($stmt),
+            $stmt instanceof ClassConstMaskNode => $this->printClassConstMaskNode($stmt),
+            $stmt instanceof ConstMaskNode => $this->printConstMaskNode($stmt),
+            $stmt instanceof CallableTypeNode => $this->printCallableTypeNode($stmt),
+            $stmt instanceof UnionTypeNode => $this->printUnionTypeNode($stmt),
+            $stmt instanceof IntersectionTypeNode => $this->printIntersectionTypeNode($stmt),
             default => throw new \InvalidArgumentException(
                 \sprintf('Non-printable node "%s"', $stmt::class),
             ),
         };
     }
 
+    protected function printClassConstNode(ClassConstNode $node): string
+    {
+        return \vsprintf('%s::%s', [
+            $node->class->toString(),
+            $node->constant,
+        ]);
+    }
+
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printClassConstMaskNode(ClassConstMaskNode $node, int $depth = 0): string
+    protected function printClassConstMaskNode(ClassConstMaskNode $node): string
     {
         return \vsprintf('%s::%s', [
             $node->class->toString(),
@@ -94,28 +68,24 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printConstMaskNode(ConstMaskNode $node, int $depth = 0): string
+    protected function printConstMaskNode(ConstMaskNode $node): string
     {
         return $node->name->toString() . '*';
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printCallableTypeNode(CallableTypeNode $node, int $depth = 0): string
+    protected function printCallableTypeNode(CallableTypeNode $node): string
     {
         $result = $node->name->toString();
 
         $arguments = [];
 
         foreach ($node->arguments as $argument) {
-            $arguments[] = \rtrim($this->printCallableArgumentNode($argument, $depth));
+            $arguments[] = \rtrim($this->printCallableArgumentNode($argument));
         }
 
         // Add arguments
@@ -123,7 +93,7 @@ class PrettyPrinter extends Printer
 
         // Add return type
         if ($node->type !== null) {
-            $returnType = $this->print($node->type, $depth);
+            $returnType = $this->make($node->type);
 
             if ($this->shouldWrapReturnType($returnType)) {
                 $returnType = \sprintf('(%s)', $returnType);
@@ -136,22 +106,20 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printCallableArgumentNode(ArgumentNodeInterface $node, int $depth = 0): string
+    protected function printCallableArgumentNode(ArgumentNodeInterface $node): string
     {
         return match (true) {
             $node instanceof OptionalArgumentNode
-                => $this->printCallableArgumentNode($node->of, $depth) . '=',
+                => $this->printCallableArgumentNode($node->of) . '=',
             $node instanceof NamedArgumentNode
-                => $this->printCallableArgumentNode($node->of, $depth) . $node->name->getRawValue(),
+                => $this->printCallableArgumentNode($node->of) . $node->name->getRawValue(),
             $node instanceof OutArgumentNode
-                => \rtrim($this->printCallableArgumentNode($node->of, $depth)) . '& ',
+                => \rtrim($this->printCallableArgumentNode($node->of)) . '& ',
             $node instanceof VariadicArgumentNode
-                => $this->printCallableArgumentNode($node->of, $depth) . '...',
-            default => $this->print($node->getType(), $depth) . ' ',
+                => $this->printCallableArgumentNode($node->of) . '...',
+            default => $this->make($node->getType()) . ' ',
         };
     }
 
@@ -173,147 +141,143 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printUnionTypeNode(UnionTypeNode $node, int $depth = 0): string
+    protected function printUnionTypeNode(UnionTypeNode $node): string
     {
-        return \vsprintf('(%s)', [
-            \implode(' | ', [
-                ...$this->unwrapAndPrint($node, $depth),
-            ]),
-        ]);
+        try {
+            /** @var non-empty-string */
+            return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
+                \implode('|', [
+                    ...$this->unwrapAndPrint($node),
+                ]),
+            ]);
+        } finally {
+            ++$this->nesting;
+        }
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printIntersectionTypeNode(IntersectionTypeNode $node, int $depth = 0): string
+    protected function printIntersectionTypeNode(IntersectionTypeNode $node): string
     {
-        return \vsprintf('(%s)', [
-            \implode(' & ', [
-                ...$this->unwrapAndPrint($node, $depth),
-            ]),
-        ]);
+        try {
+            /** @var non-empty-string */
+            return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
+                \implode(' & ', [
+                    ...$this->unwrapAndPrint($node),
+                ]),
+            ]);
+        } finally {
+            ++$this->nesting;
+        }
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printLiteralNode(LiteralNode $node, int $depth = 0): string
+    protected function printLiteralNode(LiteralNode $node): string
     {
         return $node->getRawValue();
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printNamedTypeNode(NamedTypeNode $node, int $depth = 0): string
+    protected function printNamedTypeNode(NamedTypeNode $node): string
     {
         $result = $node->name->toString();
 
         if ($node->parameters !== null) {
-            $result .= $this->printTemplateParametersNode($node->parameters, $depth);
+            $result .= $this->printTemplateParametersNode($node->parameters);
         }
 
         if ($node->fields !== null) {
-            $result .= $this->printShapeFieldsNode($node->fields, $depth);
+            $result .= $this->printShapeFieldsNode($node->fields);
         }
 
         return $result;
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printTemplateParametersNode(ParametersListNode $params, int $depth = 0): string
+    protected function printTemplateParametersNode(ParametersListNode $params): string
     {
         $result = [];
 
         foreach ($params->list as $param) {
-            $result[] = $this->printTemplateParameterNode($param, $depth);
+            $result[] = $this->printTemplateParameterNode($param);
         }
 
         return \sprintf('<%s>', \implode(', ', $result));
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printTemplateParameterNode(ParameterNode $param, int $depth = 0): string
+    protected function printTemplateParameterNode(ParameterNode $param): string
     {
-        return $this->print($param->value, $depth);
+        return $this->make($param->value);
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printShapeFieldsNode(FieldsListNode $shape, int $depth = 0): string
+    protected function printShapeFieldsNode(FieldsListNode $shape): string
     {
-        $fields = [];
+        $fields = $this->nested(function () use ($shape): array {
+            $prefix = $this->newLine . $this->prefix();
+            $fields = [];
 
-        $prefix = $this->newLine . $this->prefix($depth + 1);
+            foreach ($shape->list as $field) {
+                $fields[] = $prefix . $this->printShapeFieldNode($field);
+            }
 
-        foreach ($shape->list as $field) {
-            $fields[] = $prefix . $this->printShapeFieldNode($field, $depth + 1);
-        }
+            if (!$shape->sealed) {
+                $fields[] = $prefix . '...';
+            }
 
-        if (!$shape->sealed) {
-            $fields[] = $prefix . '...';
-        }
+            /** @var list<non-empty-string> */
+            return $fields;
+        });
 
         return \vsprintf('{%s%s}', [
             \implode(',', $fields),
-            $this->newLine . $this->prefix($depth),
+            $this->newLine . $this->prefix(),
         ]);
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    protected function printShapeFieldNode(FieldNodeInterface $field, int $depth = 0): string
+    protected function printShapeFieldNode(FieldNodeInterface $field): string
     {
-        $fieldName = $this->printShapeFieldName($field, $depth);
+        $fieldName = $this->printShapeFieldName($field);
 
         if ($fieldName !== '') {
             return \vsprintf('%s: %s', [
                 $fieldName,
-                $this->print($field->getValue(), $depth),
+                $this->make($field->getValue()),
             ]);
         }
 
-        return $this->print($field->getValue(), $depth);
+        return $this->make($field->getValue());
     }
 
     /**
-     * @param int<0, max> $depth
-     *
      * @return non-empty-string
      */
-    private function printShapeFieldName(FieldNodeInterface $field, int $depth = 0): string
+    private function printShapeFieldName(FieldNodeInterface $field): string
     {
         return match (true) {
             $field instanceof OptionalFieldNode
-                => $this->printShapeFieldName($field->of, $depth) . '?',
+                => $this->printShapeFieldName($field->of) . '?',
             $field instanceof NumericFieldNode
-                => $this->printShapeFieldName($field->of, $depth) . $field->index->getRawValue(),
+                => $this->printShapeFieldName($field->of) . $field->index->getRawValue(),
             $field instanceof NamedFieldNode
-                => $this->printShapeFieldName($field->of, $depth) . $field->name->getRawValue(),
+                => $this->printShapeFieldName($field->of) . $field->name->getRawValue(),
             default => '',
         };
     }
