@@ -15,6 +15,7 @@ use TypeLang\Parser\Node\Stmt\Type\ClassConstMaskNode;
 use TypeLang\Parser\Node\Stmt\Type\ClassConstNode;
 use TypeLang\Parser\Node\Stmt\Type\ConstMaskNode;
 use TypeLang\Parser\Node\Stmt\Type\IntersectionTypeNode;
+use TypeLang\Parser\Node\Stmt\Type\LogicalTypeNode;
 use TypeLang\Parser\Node\Stmt\Type\NamedTypeNode;
 use TypeLang\Parser\Node\Stmt\Type\Shape\FieldNodeInterface;
 use TypeLang\Parser\Node\Stmt\Type\Shape\FieldsListNode;
@@ -95,11 +96,11 @@ class PrettyPrinter extends Printer
         if ($node->type !== null) {
             $returnType = $this->make($node->type);
 
-            if ($this->shouldWrapReturnType($returnType)) {
+            if ($node->type instanceof LogicalTypeNode) {
                 $returnType = \sprintf('(%s)', $returnType);
             }
 
-            $result .= \sprintf(': %s', $returnType);
+            $result .= \sprintf(':%s', $returnType);
         }
 
         return $result;
@@ -121,23 +122,6 @@ class PrettyPrinter extends Printer
                 => $this->printCallableArgumentNode($node->of) . '...',
             default => $this->make($node->getType()) . ' ',
         };
-    }
-
-    private function shouldWrapReturnType(string $value): bool
-    {
-        // Should return "false" in case of return type already
-        // has been wrapped by round brackets.
-        $isAlreadyWrapped = \str_starts_with($value, '(')
-            && \str_ends_with($value, ')');
-
-        if ($isAlreadyWrapped) {
-            return false;
-        }
-
-        // Should return "true" in case of return type contains
-        // union or intersection types.
-        return \str_contains($value, '|')
-            || \str_contains($value, '&');
     }
 
     /**
@@ -269,7 +253,7 @@ class PrettyPrinter extends Printer
     /**
      * @return non-empty-string
      */
-    private function printShapeFieldName(FieldNodeInterface $field): string
+    protected function printShapeFieldName(FieldNodeInterface $field): string
     {
         return match (true) {
             $field instanceof OptionalFieldNode
