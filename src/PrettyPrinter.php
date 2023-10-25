@@ -74,7 +74,7 @@ class PrettyPrinter extends Printer
     /**
      * @return non-empty-string
      */
-    public function make(Statement $stmt): string
+    protected function make(Statement $stmt): string
     {
         return match (true) {
             $stmt instanceof LiteralNode => $this->printLiteralNode($stmt),
