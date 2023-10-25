@@ -4,6 +4,4 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
-class PhpDocTypePrinter extends PrettyPrinter
-{
-}
+class PhpDocTypePrinter extends PrettyPrinter {}
