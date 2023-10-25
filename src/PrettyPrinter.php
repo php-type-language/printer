@@ -18,12 +18,12 @@ use TypeLang\Parser\Node\Type\ConstMaskNode;
 use TypeLang\Parser\Node\Type\IntersectionTypeNode;
 use TypeLang\Parser\Node\Type\LogicalTypeNode;
 use TypeLang\Parser\Node\Type\NamedTypeNode;
-use TypeLang\Parser\Node\Type\Shape\FieldNodeInterface;
+use TypeLang\Parser\Node\Type\Shape\FieldNode;
 use TypeLang\Parser\Node\Type\Shape\FieldsListNode;
 use TypeLang\Parser\Node\Type\Shape\NamedFieldNode;
 use TypeLang\Parser\Node\Type\Shape\NumericFieldNode;
-use TypeLang\Parser\Node\Type\Shape\OptionalFieldNode;
 use TypeLang\Parser\Node\Statement;
+use TypeLang\Parser\Node\Type\Shape\StringNamedFieldNode;
 use TypeLang\Parser\Node\Type\Template\ParameterNode;
 use TypeLang\Parser\Node\Type\Template\ParametersListNode;
 use TypeLang\Parser\Node\Type\TypeStatement;
@@ -321,14 +321,18 @@ class PrettyPrinter extends Printer
     /**
      * @return non-empty-string
      */
-    protected function printShapeFieldNode(FieldNodeInterface $field): string
+    protected function printShapeFieldNode(FieldNode $field): string
     {
-        $fieldName = $this->printShapeFieldName($field);
+        $name = $this->printShapeFieldName($field);
 
-        if ($fieldName !== '') {
+        if ($name !== '') {
+            if ($field->optional) {
+                $name .= '?';
+            }
+
             /** @var non-empty-string */
             return \vsprintf('%s: %s', [
-                $fieldName,
+                $name,
                 $this->make($field->getValue()),
             ]);
         }
@@ -336,15 +340,12 @@ class PrettyPrinter extends Printer
         return $this->make($field->getValue());
     }
 
-    protected function printShapeFieldName(FieldNodeInterface $field): string
+    protected function printShapeFieldName(FieldNode $field): string
     {
         return match (true) {
-            $field instanceof OptionalFieldNode
-                => $this->printShapeFieldName($field->of) . '?',
-            $field instanceof NumericFieldNode
-                => $this->printShapeFieldName($field->of) . $field->index->getRawValue(),
-            $field instanceof NamedFieldNode
-                => $this->printShapeFieldName($field->of) . $field->name->getRawValue(),
+            $field instanceof StringNamedFieldNode => $field->name->getRawValue(),
+            $field instanceof NumericFieldNode => $field->index->getRawValue(),
+            $field instanceof NamedFieldNode => $field->name->toString(),
             default => '',
         };
     }
