@@ -110,12 +110,14 @@ final class NativeTypePrinter extends PrettyPrinter
     public function addTypeAlias(string $alias, string $type): void
     {
         if (\str_contains($type, '|')) {
+            /** @psalm-suppress ArgumentTypeCoercion */
             $this->addUnionTypeAlias($alias, \explode('|', $type));
 
             return;
         }
 
         if (\str_contains($type, '&')) {
+            /** @psalm-suppress ArgumentTypeCoercion */
             $this->addUnionTypeAlias($alias, \explode('&', $type));
 
             return;
@@ -126,7 +128,7 @@ final class NativeTypePrinter extends PrettyPrinter
 
     /**
      * @param non-empty-string $alias
-     * @param list<non-empty-string> $types
+     * @param non-empty-list<non-empty-string> $types
      */
     public function addUnionTypeAlias(string $alias, array $types): void
     {
@@ -137,7 +139,7 @@ final class NativeTypePrinter extends PrettyPrinter
 
     /**
      * @param non-empty-string $alias
-     * @param list<non-empty-string> $types
+     * @param non-empty-list<non-empty-string> $types
      */
     public function addIntersectionTypeAlias(string $alias, array $types): void
     {

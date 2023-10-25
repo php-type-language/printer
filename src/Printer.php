@@ -104,8 +104,12 @@ abstract class Printer implements PrinterInterface
      */
     protected function unwrap(LogicalTypeNode $logical): iterable
     {
-        foreach ($logical->statements as $stmt) {
-            yield from $stmt instanceof $logical ? $this->unwrap($stmt) : [$stmt];
+        foreach ($logical->statements as $statement) {
+            if ($statement instanceof $logical && $statement instanceof LogicalTypeNode) {
+                yield from $this->unwrap($statement);
+            } else {
+                yield $statement;
+            }
         }
     }
 

@@ -91,11 +91,15 @@ class PrettyPrinter extends Printer
         };
     }
 
+    /**
+     * @return non-empty-string
+     */
     protected function printClassConstNode(ClassConstNode $node): string
     {
+        /** @var non-empty-string */
         return \vsprintf('%s::%s', [
             $node->class->toString(),
-            $node->constant,
+            (string)$node->constant?->toString(),
         ]);
     }
 
@@ -104,9 +108,10 @@ class PrettyPrinter extends Printer
      */
     protected function printClassConstMaskNode(ClassConstMaskNode $node): string
     {
+        /** @var non-empty-string */
         return \vsprintf('%s::%s', [
             $node->class->toString(),
-            (string)$node->constant . '*',
+            (string)($node->constant?->toString()) . '*',
         ]);
     }
 
@@ -239,6 +244,7 @@ class PrettyPrinter extends Printer
      */
     protected function printLiteralNode(LiteralNode $node): string
     {
+        /** @var non-empty-string */
         return $node->getRawValue();
     }
 
@@ -257,6 +263,7 @@ class PrettyPrinter extends Printer
             $result .= $this->printShapeFieldsNode($node->fields);
         }
 
+        /** @var non-empty-string */
         return $result;
     }
 
@@ -271,6 +278,7 @@ class PrettyPrinter extends Printer
             $result[] = $this->printTemplateParameterNode($param);
         }
 
+        /** @var non-empty-string */
         return \sprintf('<%s>', \implode(', ', $result));
     }
 
@@ -303,6 +311,7 @@ class PrettyPrinter extends Printer
             return $fields;
         });
 
+        /** @var non-empty-string */
         return \vsprintf('{%s%s}', [
             \implode(',', $fields),
             $this->newLine . $this->prefix(),
@@ -317,6 +326,7 @@ class PrettyPrinter extends Printer
         $fieldName = $this->printShapeFieldName($field);
 
         if ($fieldName !== '') {
+            /** @var non-empty-string */
             return \vsprintf('%s: %s', [
                 $fieldName,
                 $this->make($field->getValue()),
@@ -326,9 +336,6 @@ class PrettyPrinter extends Printer
         return $this->make($field->getValue());
     }
 
-    /**
-     * @return non-empty-string
-     */
     protected function printShapeFieldName(FieldNodeInterface $field): string
     {
         return match (true) {
