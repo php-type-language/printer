@@ -4,13 +4,13 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
-use TypeLang\Parser\Node\Stmt\Type\CallableTypeNode;
-use TypeLang\Parser\Node\Stmt\Type\ClassConstMaskNode;
-use TypeLang\Parser\Node\Stmt\Type\ClassConstNode;
-use TypeLang\Parser\Node\Stmt\Type\ConstMaskNode;
-use TypeLang\Parser\Node\Stmt\Type\IntersectionTypeNode;
-use TypeLang\Parser\Node\Stmt\Type\NamedTypeNode;
-use TypeLang\Parser\Node\Stmt\Type\UnionTypeNode;
+use TypeLang\Parser\Node\Type\CallableTypeNode;
+use TypeLang\Parser\Node\Type\ClassConstMaskNode;
+use TypeLang\Parser\Node\Type\ClassConstNode;
+use TypeLang\Parser\Node\Type\ConstMaskNode;
+use TypeLang\Parser\Node\Type\IntersectionTypeNode;
+use TypeLang\Parser\Node\Type\NamedTypeNode;
+use TypeLang\Parser\Node\Type\UnionTypeNode;
 
 final class NativeTypePrinter extends PrettyPrinter
 {

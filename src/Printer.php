@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
-use TypeLang\Parser\Node\Stmt\Statement;
-use TypeLang\Parser\Node\Stmt\Type\LogicalTypeNode;
+use TypeLang\Parser\Node\Statement;
+use TypeLang\Parser\Node\Type\LogicalTypeNode;
 
 abstract class Printer implements PrinterInterface
 {
