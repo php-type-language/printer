@@ -6,11 +6,7 @@ namespace TypeLang\Printer;
 
 use TypeLang\Parser\Node\Node;
 use TypeLang\Parser\Node\Literal\LiteralNode;
-use TypeLang\Parser\Node\Type\Callable\ArgumentNodeInterface;
-use TypeLang\Parser\Node\Type\Callable\NamedArgumentNode;
-use TypeLang\Parser\Node\Type\Callable\OptionalArgumentNode;
-use TypeLang\Parser\Node\Type\Callable\OutArgumentNode;
-use TypeLang\Parser\Node\Type\Callable\VariadicArgumentNode;
+use TypeLang\Parser\Node\Type\Callable\ArgumentNode;
 use TypeLang\Parser\Node\Type\CallableTypeNode;
 use TypeLang\Parser\Node\Type\ClassConstMaskNode;
 use TypeLang\Parser\Node\Type\ClassConstNode;
@@ -18,6 +14,7 @@ use TypeLang\Parser\Node\Type\ConstMaskNode;
 use TypeLang\Parser\Node\Type\IntersectionTypeNode;
 use TypeLang\Parser\Node\Type\LogicalTypeNode;
 use TypeLang\Parser\Node\Type\NamedTypeNode;
+use TypeLang\Parser\Node\Type\NullableTypeNode;
 use TypeLang\Parser\Node\Type\Shape\FieldNode;
 use TypeLang\Parser\Node\Type\Shape\FieldsListNode;
 use TypeLang\Parser\Node\Type\Shape\NamedFieldNode;
@@ -85,10 +82,19 @@ class PrettyPrinter extends Printer
             $stmt instanceof CallableTypeNode => $this->printCallableTypeNode($stmt),
             $stmt instanceof UnionTypeNode => $this->printUnionTypeNode($stmt),
             $stmt instanceof IntersectionTypeNode => $this->printIntersectionTypeNode($stmt),
+            $stmt instanceof NullableTypeNode => $this->printNullableType($stmt),
             default => throw new \InvalidArgumentException(
                 \sprintf('Non-printable node "%s"', $stmt::class),
             ),
         };
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    protected function printNullableType(NullableTypeNode $node): string
+    {
+        return '?' . $this->make($node->type);
     }
 
     /**
@@ -186,19 +192,37 @@ class PrettyPrinter extends Printer
     /**
      * @return non-empty-string
      */
-    protected function printCallableArgumentNode(ArgumentNodeInterface $node): string
+    protected function printCallableArgumentNode(ArgumentNode $node): string
     {
-        return match (true) {
-            $node instanceof OptionalArgumentNode
-                => $this->printCallableArgumentNode($node->of) . '=',
-            $node instanceof NamedArgumentNode
-                => $this->printCallableArgumentNode($node->of) . $node->name->getRawValue(),
-            $node instanceof OutArgumentNode
-                => \rtrim($this->printCallableArgumentNode($node->of)) . '& ',
-            $node instanceof VariadicArgumentNode
-                => $this->printCallableArgumentNode($node->of) . '...',
-            default => $this->make($node->getType()) . ' ',
-        };
+        $type = $this->make($node->type);
+
+        if ($node->type instanceof LogicalTypeNode) {
+            $type = \sprintf('(%s)', $type);
+        }
+
+        $result = [$type];
+
+        if ($node->name !== null) {
+            $result[] = ' ';
+        }
+
+        if ($node->output) {
+            $result[] = '&';
+        }
+
+        if ($node->variadic) {
+            $result[] = '...';
+        }
+
+        if ($node->name !== null) {
+            $result[] = $this->printLiteralNode($node->name);
+        }
+
+        if ($node->optional) {
+            $result[] = '=';
+        }
+
+        return \implode('', $result);
     }
 
     /**
