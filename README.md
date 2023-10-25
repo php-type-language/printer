@@ -50,7 +50,7 @@ echo $native->print($statement);
 // Expected Output:
 // array
 
-$phpdoc = new \TypeLang\Printer\PhpDocTypePrinter();
+$phpdoc = new \TypeLang\Printer\PrettyPrinter();
 echo $phpdoc->print($statement);
 
 // Expected Output:
