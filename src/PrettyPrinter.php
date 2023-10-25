@@ -69,6 +69,25 @@ class PrettyPrinter extends Printer
     public bool $wrapCallableReturnType = true;
 
     /**
+     * The number of elements in the shape after which it is
+     * formatted as multiline.
+     *
+     * ```
+     * $multilineShape = 2;
+     * // array{some, any}
+     *
+     * $multilineShape = 1;
+     * // array{
+     * //     some,
+     * //     any
+     * // }
+     * ```
+     *
+     * @var int<0, max>
+     */
+    public int $multilineShape = 1;
+
+    /**
      * @return non-empty-string
      */
     protected function make(Statement $stmt): string
@@ -319,27 +338,41 @@ class PrettyPrinter extends Printer
      */
     protected function printShapeFieldsNode(FieldsListNode $shape): string
     {
-        $fields = $this->nested(function () use ($shape): array {
-            $prefix = $this->newLine . $this->prefix();
-            $fields = [];
-
-            foreach ($shape->list as $field) {
-                $fields[] = $prefix . $this->printShapeFieldNode($field);
-            }
-
-            if (!$shape->sealed) {
-                $fields[] = $prefix . '...';
-            }
-
-            /** @var list<non-empty-string> */
-            return $fields;
-        });
+        if (\count($shape->list) <= $this->multilineShape) {
+            return \vsprintf('{%s}', [
+                \implode(', ', $this->getShapeFieldsNodes($shape)),
+            ]);
+        }
 
         /** @var non-empty-string */
-        return \vsprintf('{%s%s}', [
-            \implode(',', $fields),
+        return \vsprintf('{%s%s%s}', [
+            $this->newLine,
+            \implode(",{$this->newLine}", $this->nested(function () use ($shape): array {
+                return $this->getShapeFieldsNodes($shape);
+            })),
             $this->newLine . $this->prefix(),
         ]);
+    }
+
+    /**
+     * @return list<non-empty-string>
+     */
+    private function getShapeFieldsNodes(FieldsListNode $shape): array
+    {
+        $prefix = $this->prefix();
+
+        $fields = [];
+
+        foreach ($shape->list as $field) {
+            $fields[] = $prefix . $this->printShapeFieldNode($field);
+        }
+
+        if (!$shape->sealed) {
+            $fields[] = $prefix . '...';
+        }
+
+        /** @var list<non-empty-string> */
+        return $fields;
     }
 
     /**
