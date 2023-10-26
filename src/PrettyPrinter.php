@@ -338,6 +338,7 @@ class PrettyPrinter extends Printer
     protected function printShapeFieldsNode(FieldsListNode $shape): string
     {
         if (\count($shape->list) <= $this->multilineShape) {
+            /** @var non-empty-string */
             return \vsprintf('{%s}', [
                 \implode(', ', $this->getShapeFieldsNodes($shape)),
             ]);
