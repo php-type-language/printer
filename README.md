@@ -31,7 +31,7 @@ $ composer require phptl/printer
 
 ```php
 $parser = new \TypeLang\Parser\Parser();
-$statement = $parser->parse(<<<'PHP'
+$type = $parser->parseType(<<<'PHP'
     array{
         field1: (callable(Example,int):mixed),
         field2: list<Some>,
@@ -45,13 +45,13 @@ $statement = $parser->parse(<<<'PHP'
 // Print Statement
 
 $native = new \TypeLang\Printer\NativeTypePrinter();
-echo $native->print($statement);
+echo $native->print($type);
 
 // Expected Output:
 // array
 
 $phpdoc = new \TypeLang\Printer\PrettyPrinter();
-echo $phpdoc->print($statement);
+echo $phpdoc->print($type);
 
 // Expected Output:
 // array{
