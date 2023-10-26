@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
-use TypeLang\Parser\Node\Statement;
 use TypeLang\Parser\Node\Type\CallableTypeNode;
 use TypeLang\Parser\Node\Type\ClassConstMaskNode;
 use TypeLang\Parser\Node\Type\ClassConstNode;

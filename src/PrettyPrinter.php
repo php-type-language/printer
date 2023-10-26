@@ -26,6 +26,7 @@ use TypeLang\Parser\Node\Type\Template\ParametersListNode;
 use TypeLang\Parser\Node\Type\TypeStatement;
 use TypeLang\Parser\Node\Type\UnionTypeNode;
 use TypeLang\Parser\Traverser;
+use TypeLang\Printer\Exception\NonPrintableNodeException;
 
 class PrettyPrinter extends Printer
 {
@@ -102,9 +103,7 @@ class PrettyPrinter extends Printer
             $stmt instanceof UnionTypeNode => $this->printUnionTypeNode($stmt),
             $stmt instanceof IntersectionTypeNode => $this->printIntersectionTypeNode($stmt),
             $stmt instanceof NullableTypeNode => $this->printNullableType($stmt),
-            default => throw new \InvalidArgumentException(
-                \sprintf('Non-printable node "%s"', $stmt::class),
-            ),
+            default => throw NonPrintableNodeException::fromInvalidNode($stmt),
         };
     }
 
