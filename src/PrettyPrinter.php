@@ -346,9 +346,7 @@ class PrettyPrinter extends Printer
         /** @var non-empty-string */
         return \vsprintf('{%s%s%s}', [
             $this->newLine,
-            \implode(",{$this->newLine}", $this->nested(function () use ($shape): array {
-                return $this->getShapeFieldsNodes($shape);
-            })),
+            \implode(',' . $this->newLine, $this->nested(fn(): array => $this->getShapeFieldsNodes($shape))),
             $this->newLine . $this->prefix(),
         ]);
     }
