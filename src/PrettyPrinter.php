@@ -6,25 +6,25 @@ namespace TypeLang\Printer;
 
 use TypeLang\Parser\Node\Node;
 use TypeLang\Parser\Node\Literal\LiteralNode;
-use TypeLang\Parser\Node\Type\Callable\ArgumentNode;
-use TypeLang\Parser\Node\Type\CallableTypeNode;
-use TypeLang\Parser\Node\Type\ClassConstMaskNode;
-use TypeLang\Parser\Node\Type\ClassConstNode;
-use TypeLang\Parser\Node\Type\ConstMaskNode;
-use TypeLang\Parser\Node\Type\IntersectionTypeNode;
-use TypeLang\Parser\Node\Type\LogicalTypeNode;
-use TypeLang\Parser\Node\Type\NamedTypeNode;
-use TypeLang\Parser\Node\Type\NullableTypeNode;
-use TypeLang\Parser\Node\Type\Shape\FieldNode;
-use TypeLang\Parser\Node\Type\Shape\FieldsListNode;
-use TypeLang\Parser\Node\Type\Shape\NamedFieldNode;
-use TypeLang\Parser\Node\Type\Shape\NumericFieldNode;
+use TypeLang\Parser\Node\Stmt\Callable\ArgumentNode;
+use TypeLang\Parser\Node\Stmt\CallableTypeNode;
+use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
+use TypeLang\Parser\Node\Stmt\ClassConstNode;
+use TypeLang\Parser\Node\Stmt\ConstMaskNode;
+use TypeLang\Parser\Node\Stmt\IntersectionTypeNode;
+use TypeLang\Parser\Node\Stmt\LogicalTypeNode;
+use TypeLang\Parser\Node\Stmt\NamedTypeNode;
+use TypeLang\Parser\Node\Stmt\NullableTypeNode;
+use TypeLang\Parser\Node\Stmt\Shape\FieldNode;
+use TypeLang\Parser\Node\Stmt\Shape\FieldsListNode;
+use TypeLang\Parser\Node\Stmt\Shape\NamedFieldNode;
+use TypeLang\Parser\Node\Stmt\Shape\NumericFieldNode;
 use TypeLang\Parser\Node\Statement;
-use TypeLang\Parser\Node\Type\Shape\StringNamedFieldNode;
-use TypeLang\Parser\Node\Type\Template\ParameterNode;
-use TypeLang\Parser\Node\Type\Template\ParametersListNode;
-use TypeLang\Parser\Node\Type\TypeStatement;
-use TypeLang\Parser\Node\Type\UnionTypeNode;
+use TypeLang\Parser\Node\Stmt\Shape\StringNamedFieldNode;
+use TypeLang\Parser\Node\Stmt\Template\ArgumentNode;
+use TypeLang\Parser\Node\Stmt\Template\ArgumentsListNode;
+use TypeLang\Parser\Node\Stmt\TypeStatement;
+use TypeLang\Parser\Node\Stmt\UnionTypeNode;
 use TypeLang\Parser\Traverser;
 use TypeLang\Printer\Exception\NonPrintableNodeException;
 
@@ -312,7 +312,7 @@ class PrettyPrinter extends Printer
     /**
      * @return non-empty-string
      */
-    protected function printTemplateParametersNode(ParametersListNode $params): string
+    protected function printTemplateParametersNode(ArgumentsListNode $params): string
     {
         $result = [];
 
@@ -327,7 +327,7 @@ class PrettyPrinter extends Printer
     /**
      * @return non-empty-string
      */
-    protected function printTemplateParameterNode(ParameterNode $param): string
+    protected function printTemplateParameterNode(ArgumentNode $param): string
     {
         return $this->make($param->value);
     }
