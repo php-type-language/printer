@@ -21,8 +21,8 @@ use TypeLang\Parser\Node\Stmt\Shape\NamedFieldNode;
 use TypeLang\Parser\Node\Stmt\Shape\NumericFieldNode;
 use TypeLang\Parser\Node\Statement;
 use TypeLang\Parser\Node\Stmt\Shape\StringNamedFieldNode;
-use TypeLang\Parser\Node\Stmt\Template\ArgumentNode;
-use TypeLang\Parser\Node\Stmt\Template\ArgumentsListNode;
+use TypeLang\Parser\Node\Stmt\Template\ArgumentNode as TemplateArgumentNode;
+use TypeLang\Parser\Node\Stmt\Template\ArgumentsListNode as TemplateArgumentsListNode;
 use TypeLang\Parser\Node\Stmt\TypeStatement;
 use TypeLang\Parser\Node\Stmt\UnionTypeNode;
 use TypeLang\Parser\Traverser;
@@ -297,8 +297,8 @@ class PrettyPrinter extends Printer
     {
         $result = $node->name->toString();
 
-        if ($node->parameters !== null) {
-            $result .= $this->printTemplateParametersNode($node->parameters);
+        if ($node->arguments !== null) {
+            $result .= $this->printTemplateArgumentsNode($node->arguments);
         }
 
         if ($node->fields !== null) {
@@ -312,12 +312,12 @@ class PrettyPrinter extends Printer
     /**
      * @return non-empty-string
      */
-    protected function printTemplateParametersNode(ArgumentsListNode $params): string
+    protected function printTemplateArgumentsNode(TemplateArgumentsListNode $params): string
     {
         $result = [];
 
         foreach ($params->list as $param) {
-            $result[] = $this->printTemplateParameterNode($param);
+            $result[] = $this->printTemplateArgumentNode($param);
         }
 
         /** @var non-empty-string */
@@ -327,7 +327,7 @@ class PrettyPrinter extends Printer
     /**
      * @return non-empty-string
      */
-    protected function printTemplateParameterNode(ArgumentNode $param): string
+    protected function printTemplateArgumentNode(TemplateArgumentNode $param): string
     {
         return $this->make($param->value);
     }
