@@ -20,7 +20,7 @@ The PHP reference implementation for Type Language Printer.
 
 ## Installation
 
-Type Language Parser is available as composer repository and can be installed
+Type Language Printer is available as composer repository and can be installed
 using the following command in a root of your project:
 
 ```sh
