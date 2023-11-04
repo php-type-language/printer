@@ -7,10 +7,10 @@
 ---
 
 <p align="center">
-    <a href="https://packagist.org/packages/phptl/printer"><img src="https://poser.pugx.org/phptl/printer/require/php?style=for-the-badge" alt="PHP 8.1+"></a>
-    <a href="https://packagist.org/packages/phptl/printer"><img src="https://poser.pugx.org/phptl/printer/version?style=for-the-badge" alt="Latest Stable Version"></a>
-    <a href="https://packagist.org/packages/phptl/printer"><img src="https://poser.pugx.org/phptl/printer/v/unstable?style=for-the-badge" alt="Latest Unstable Version"></a>
-    <a href="https://raw.githubusercontent.com/php-type-language/printer/blob/master/LICENSE"><img src="https://poser.pugx.org/phptl/printer/license?style=for-the-badge" alt="License MIT"></a>
+    <a href="https://packagist.org/packages/type-lang/printer"><img src="https://poser.pugx.org/type-lang/printer/require/php?style=for-the-badge" alt="PHP 8.1+"></a>
+    <a href="https://packagist.org/packages/type-lang/printer"><img src="https://poser.pugx.org/type-lang/printer/version?style=for-the-badge" alt="Latest Stable Version"></a>
+    <a href="https://packagist.org/packages/type-lang/printer"><img src="https://poser.pugx.org/type-lang/printer/v/unstable?style=for-the-badge" alt="Latest Unstable Version"></a>
+    <a href="https://raw.githubusercontent.com/php-type-language/printer/blob/master/LICENSE"><img src="https://poser.pugx.org/type-lang/printer/license?style=for-the-badge" alt="License MIT"></a>
 </p>
 <p align="center">
     <a href="https://github.com/php-type-language/printer/actions"><img src="https://github.com/php-type-language/printer/workflows/tests/badge.svg"></a>
@@ -24,7 +24,7 @@ Type Language Printer is available as composer repository and can be installed
 using the following command in a root of your project:
 
 ```sh
-$ composer require phptl/printer
+$ composer require type-lang/printer
 ```
 
 ## Quick Start
