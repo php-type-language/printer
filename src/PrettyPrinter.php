@@ -190,8 +190,8 @@ class PrettyPrinter extends Printer
                 break: static function (Node $node): bool {
                     // Break on non-empty template parameters.
                     $isInTemplate = $node instanceof NamedTypeNode
-                        && $node->parameters !== null
-                        && $node->parameters->list !== [];
+                        && $node->arguments !== null
+                        && $node->arguments->list !== [];
 
                     // Break on non-empty shape fields.
                     $isInShape = $node instanceof NamedTypeNode
