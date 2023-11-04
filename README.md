@@ -16,7 +16,10 @@
     <a href="https://github.com/php-type-language/printer/actions"><img src="https://github.com/php-type-language/printer/workflows/tests/badge.svg"></a>
 </p>
 
-The PHP reference implementation for Type Language Printer.
+The PHP reference implementation for Type Language printer.
+
+Read [documentation pages](https://nesk.gitbook.io/php-type-language) for more
+information.
 
 ## Installation
 
