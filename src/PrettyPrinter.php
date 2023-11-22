@@ -6,7 +6,7 @@ namespace TypeLang\Printer;
 
 use TypeLang\Parser\Node\Node;
 use TypeLang\Parser\Node\Literal\LiteralNode;
-use TypeLang\Parser\Node\Stmt\Callable\ArgumentNode;
+use TypeLang\Parser\Node\Stmt\Callable\ParameterNode;
 use TypeLang\Parser\Node\Stmt\CallableTypeNode;
 use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
 use TypeLang\Parser\Node\Stmt\ClassConstNode;
@@ -156,7 +156,7 @@ class PrettyPrinter extends Printer
 
         $arguments = [];
 
-        foreach ($node->arguments as $argument) {
+        foreach ($node->parameters as $argument) {
             $arguments[] = \rtrim($this->printCallableArgumentNode($argument));
         }
 
@@ -210,9 +210,9 @@ class PrettyPrinter extends Printer
     /**
      * @return non-empty-string
      */
-    protected function printCallableArgumentNode(ArgumentNode $node): string
+    protected function printCallableArgumentNode(ParameterNode $node): string
     {
-        $type = $this->make($node->type);
+        $type = $node->type ? $this->make($node->type) : 'mixed';
 
         if ($node->type instanceof LogicalTypeNode) {
             $type = \sprintf('(%s)', $type);
