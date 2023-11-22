@@ -212,7 +212,11 @@ class PrettyPrinter extends Printer
      */
     protected function printCallableArgumentNode(ParameterNode $node): string
     {
-        $type = $node->type ? $this->make($node->type) : 'mixed';
+        $type = 'mixed';
+
+        if ($node->type !== null) {
+            $type = $this->make($node->type);
+        }
 
         if ($node->type instanceof LogicalTypeNode) {
             $type = \sprintf('(%s)', $type);
