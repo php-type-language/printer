@@ -153,9 +153,6 @@ final class NativeTypePrinter extends PrettyPrinter
         $this->aliases[\strtolower($alias)] = \implode('&', $types);
     }
 
-    /**
-     * @return non-empty-string
-     */
     protected function printTernaryType(TernaryConditionNode $node): string
     {
         return $this->make(new UnionTypeNode(
