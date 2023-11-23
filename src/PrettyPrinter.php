@@ -10,6 +10,9 @@ use TypeLang\Parser\Node\Stmt\Callable\ParameterNode;
 use TypeLang\Parser\Node\Stmt\CallableTypeNode;
 use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
 use TypeLang\Parser\Node\Stmt\ClassConstNode;
+use TypeLang\Parser\Node\Stmt\Condition\Condition;
+use TypeLang\Parser\Node\Stmt\Condition\EqualConditionNode;
+use TypeLang\Parser\Node\Stmt\Condition\NotEqualConditionNode;
 use TypeLang\Parser\Node\Stmt\ConstMaskNode;
 use TypeLang\Parser\Node\Stmt\IntersectionTypeNode;
 use TypeLang\Parser\Node\Stmt\LogicalTypeNode;
@@ -23,6 +26,7 @@ use TypeLang\Parser\Node\Statement;
 use TypeLang\Parser\Node\Stmt\Shape\StringNamedFieldNode;
 use TypeLang\Parser\Node\Stmt\Template\ArgumentNode as TemplateArgumentNode;
 use TypeLang\Parser\Node\Stmt\Template\ArgumentsListNode as TemplateArgumentsListNode;
+use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
 use TypeLang\Parser\Node\Stmt\TypeStatement;
 use TypeLang\Parser\Node\Stmt\UnionTypeNode;
 use TypeLang\Parser\Traverser;
@@ -103,7 +107,34 @@ class PrettyPrinter extends Printer
             $stmt instanceof UnionTypeNode => $this->printUnionTypeNode($stmt),
             $stmt instanceof IntersectionTypeNode => $this->printIntersectionTypeNode($stmt),
             $stmt instanceof NullableTypeNode => $this->printNullableType($stmt),
+            $stmt instanceof TernaryConditionNode => $this->printTernaryType($stmt),
             default => throw NonPrintableNodeException::fromInvalidNode($stmt),
+        };
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    protected function printTernaryType(TernaryConditionNode $node): string
+    {
+        return \vsprintf('(%s %s %s ? %s : %s)', [
+            $this->make($node->condition->subject),
+            $this->printCondition($node->condition),
+            $this->make($node->condition->target),
+            $this->make($node->then),
+            $this->make($node->else),
+        ]);
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    protected function printCondition(Condition $node): string
+    {
+        return match (true) {
+            $node instanceof EqualConditionNode => 'is',
+            $node instanceof NotEqualConditionNode => 'is not',
+            default => throw NonPrintableNodeException::fromInvalidNode($node),
         };
     }
 

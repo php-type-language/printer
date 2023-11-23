@@ -7,10 +7,15 @@ namespace TypeLang\Printer;
 use TypeLang\Parser\Node\Stmt\CallableTypeNode;
 use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
 use TypeLang\Parser\Node\Stmt\ClassConstNode;
+use TypeLang\Parser\Node\Stmt\Condition\Condition;
+use TypeLang\Parser\Node\Stmt\Condition\EqualConditionNode;
+use TypeLang\Parser\Node\Stmt\Condition\NotEqualConditionNode;
 use TypeLang\Parser\Node\Stmt\ConstMaskNode;
 use TypeLang\Parser\Node\Stmt\IntersectionTypeNode;
 use TypeLang\Parser\Node\Stmt\NamedTypeNode;
+use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
 use TypeLang\Parser\Node\Stmt\UnionTypeNode;
+use TypeLang\Printer\Exception\NonPrintableNodeException;
 
 final class NativeTypePrinter extends PrettyPrinter
 {
@@ -146,6 +151,26 @@ final class NativeTypePrinter extends PrettyPrinter
         \sort($types);
 
         $this->aliases[\strtolower($alias)] = \implode('&', $types);
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    protected function printTernaryType(TernaryConditionNode $node): string
+    {
+        return $this->make(new UnionTypeNode(
+            $node->then,
+            $node->else,
+        ));
+    }
+
+    protected function printCondition(Condition $node): string
+    {
+        return match (true) {
+            $node instanceof EqualConditionNode => '===',
+            $node instanceof NotEqualConditionNode => '!==',
+            default => throw NonPrintableNodeException::fromInvalidNode($node),
+        };
     }
 
     protected function printClassConstMaskNode(ClassConstMaskNode $node): string
