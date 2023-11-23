@@ -403,7 +403,7 @@ class PrettyPrinter extends Printer
             $fields[] = $prefix . $this->printShapeFieldNode($field);
         }
 
-        if (!$shape->sealed) {
+        if (!$shape->sealed || $node->arguments !== null) {
             $prefix .= '...';
 
             if ($node->arguments !== null) {
