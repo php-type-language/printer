@@ -117,6 +117,7 @@ class PrettyPrinter extends Printer
      */
     protected function printTernaryType(TernaryConditionNode $node): string
     {
+        /** @var non-empty-string */
         return \vsprintf('(%s %s %s ? %s : %s)', [
             $this->make($node->condition->subject),
             $this->printCondition($node->condition),
