@@ -333,12 +333,12 @@ class PrettyPrinter extends Printer
     {
         $result = $node->name->toString();
 
-        if ($node->arguments !== null) {
-            $result .= $this->printTemplateArgumentsNode($node->arguments);
-        }
-
         if ($node->fields !== null) {
-            $result .= $this->printShapeFieldsNode($node->fields);
+            $result .= $this->printShapeFieldsNode($node, $node->fields);
+        } else {
+            if ($node->arguments !== null) {
+                $result .= $this->printTemplateArgumentsNode($node->arguments);
+            }
         }
 
         /** @var non-empty-string */
@@ -371,19 +371,21 @@ class PrettyPrinter extends Printer
     /**
      * @return non-empty-string
      */
-    protected function printShapeFieldsNode(FieldsListNode $shape): string
+    protected function printShapeFieldsNode(NamedTypeNode $node, FieldsListNode $shape): string
     {
         if (\count($shape->list) <= $this->multilineShape) {
             /** @var non-empty-string */
             return \vsprintf('{%s}', [
-                \implode(', ', $this->getShapeFieldsNodes($shape)),
+                \implode(', ', $this->getShapeFieldsNodes($node, $shape)),
             ]);
         }
 
         /** @var non-empty-string */
         return \vsprintf('{%s%s%s}', [
             $this->newLine,
-            \implode(',' . $this->newLine, $this->nested(fn(): array => $this->getShapeFieldsNodes($shape))),
+            \implode(',' . $this->newLine, $this->nested(
+                section: fn(): array => $this->getShapeFieldsNodes($node, $shape),
+            )),
             $this->newLine . $this->prefix(),
         ]);
     }
@@ -391,7 +393,7 @@ class PrettyPrinter extends Printer
     /**
      * @return list<non-empty-string>
      */
-    private function getShapeFieldsNodes(FieldsListNode $shape): array
+    private function getShapeFieldsNodes(NamedTypeNode $node, FieldsListNode $shape): array
     {
         $prefix = $this->prefix();
 
@@ -402,7 +404,13 @@ class PrettyPrinter extends Printer
         }
 
         if (!$shape->sealed) {
-            $fields[] = $prefix . '...';
+            $prefix .= '...';
+
+            if ($node->arguments !== null) {
+                $prefix .= $this->printTemplateArgumentsNode($node->arguments);
+            }
+
+            $fields[] = $prefix;
         }
 
         /** @var list<non-empty-string> */
