@@ -27,6 +27,7 @@ use TypeLang\Parser\Node\Stmt\Shape\StringNamedFieldNode;
 use TypeLang\Parser\Node\Stmt\Template\ArgumentNode as TemplateArgumentNode;
 use TypeLang\Parser\Node\Stmt\Template\ArgumentsListNode as TemplateArgumentsListNode;
 use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
+use TypeLang\Parser\Node\Stmt\TypesListNode;
 use TypeLang\Parser\Node\Stmt\TypeStatement;
 use TypeLang\Parser\Node\Stmt\UnionTypeNode;
 use TypeLang\Parser\Traverser;
@@ -108,8 +109,19 @@ class PrettyPrinter extends Printer
             $stmt instanceof IntersectionTypeNode => $this->printIntersectionTypeNode($stmt),
             $stmt instanceof NullableTypeNode => $this->printNullableType($stmt),
             $stmt instanceof TernaryConditionNode => $this->printTernaryType($stmt),
+            $stmt instanceof TypesListNode => $this->printTypeListNode($stmt),
             default => throw NonPrintableNodeException::fromInvalidNode($stmt),
         };
+    }
+
+    /**
+     * @return non-empty-string
+     */
+    protected function printTypeListNode(TypesListNode $node): string
+    {
+        $result = $this->make($node->type);
+
+        return $result . '[]';
     }
 
     /**

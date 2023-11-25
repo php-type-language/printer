@@ -14,10 +14,11 @@ use TypeLang\Parser\Node\Stmt\ConstMaskNode;
 use TypeLang\Parser\Node\Stmt\IntersectionTypeNode;
 use TypeLang\Parser\Node\Stmt\NamedTypeNode;
 use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
+use TypeLang\Parser\Node\Stmt\TypesListNode;
 use TypeLang\Parser\Node\Stmt\UnionTypeNode;
 use TypeLang\Printer\Exception\NonPrintableNodeException;
 
-final class NativeTypePrinter extends PrettyPrinter
+class NativeTypePrinter extends PrettyPrinter
 {
     /**
      * @var array<non-empty-string, non-empty-string>
@@ -153,6 +154,16 @@ final class NativeTypePrinter extends PrettyPrinter
         $this->aliases[\strtolower($alias)] = \implode('&', $types);
     }
 
+    /**
+     * @return non-empty-string
+     */
+    #[\Override]
+    protected function printTypeListNode(TypesListNode $node): string
+    {
+        return 'iterable';
+    }
+
+    #[\Override]
     protected function printTernaryType(TernaryConditionNode $node): string
     {
         return $this->make(new UnionTypeNode(
@@ -161,6 +172,7 @@ final class NativeTypePrinter extends PrettyPrinter
         ));
     }
 
+    #[\Override]
     protected function printCondition(Condition $node): string
     {
         return match (true) {
@@ -170,21 +182,25 @@ final class NativeTypePrinter extends PrettyPrinter
         };
     }
 
+    #[\Override]
     protected function printClassConstMaskNode(ClassConstMaskNode $node): string
     {
         return 'int';
     }
 
+    #[\Override]
     protected function printConstMaskNode(ConstMaskNode $node): string
     {
         return 'int';
     }
 
+    #[\Override]
     protected function printClassConstNode(ClassConstNode $node): string
     {
         return 'mixed';
     }
 
+    #[\Override]
     protected function printUnionTypeNode(UnionTypeNode $node): string
     {
         try {
@@ -197,6 +213,7 @@ final class NativeTypePrinter extends PrettyPrinter
         }
     }
 
+    #[\Override]
     protected function printIntersectionTypeNode(IntersectionTypeNode $node): string
     {
         try {
@@ -219,11 +236,13 @@ final class NativeTypePrinter extends PrettyPrinter
         return $this->aliases[\strtolower($name)] ?? $name;
     }
 
+    #[\Override]
     protected function printCallableTypeNode(CallableTypeNode $node): string
     {
         return $this->getTypeName($node->name->toString());
     }
 
+    #[\Override]
     protected function printNamedTypeNode(NamedTypeNode $node): string
     {
         return $this->getTypeName($node->name->toString());
