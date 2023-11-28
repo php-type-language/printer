@@ -18,6 +18,9 @@ use TypeLang\Parser\Node\Stmt\TypesListNode;
 use TypeLang\Parser\Node\Stmt\UnionTypeNode;
 use TypeLang\Printer\Exception\NonPrintableNodeException;
 
+/**
+ * @psalm-suppress UndefinedAttributeClass : For "Override" attribute support.
+ */
 class NativeTypePrinter extends PrettyPrinter
 {
     /**
