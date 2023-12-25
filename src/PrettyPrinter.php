@@ -235,12 +235,12 @@ class PrettyPrinter extends Printer
                     // Break on non-empty template parameters.
                     $isInTemplate = $node instanceof NamedTypeNode
                         && $node->arguments !== null
-                        && $node->arguments->list !== [];
+                        && $node->arguments->items !== [];
 
                     // Break on non-empty shape fields.
                     $isInShape = $node instanceof NamedTypeNode
                         && $node->fields !== null
-                        && $node->fields->list !== [];
+                        && $node->fields->items !== [];
 
                     return $isInTemplate || $isInShape;
                 },
@@ -347,10 +347,8 @@ class PrettyPrinter extends Printer
 
         if ($node->fields !== null) {
             $result .= $this->printShapeFieldsNode($node, $node->fields);
-        } else {
-            if ($node->arguments !== null) {
-                $result .= $this->printTemplateArgumentsNode($node->arguments);
-            }
+        } elseif ($node->arguments !== null) {
+            $result .= $this->printTemplateArgumentsNode($node->arguments);
         }
 
         /** @var non-empty-string */
@@ -364,7 +362,7 @@ class PrettyPrinter extends Printer
     {
         $result = [];
 
-        foreach ($params->list as $param) {
+        foreach ($params->items as $param) {
             $result[] = $this->printTemplateArgumentNode($param);
         }
 
@@ -385,7 +383,7 @@ class PrettyPrinter extends Printer
      */
     protected function printShapeFieldsNode(NamedTypeNode $node, FieldsListNode $shape): string
     {
-        if (\count($shape->list) <= $this->multilineShape) {
+        if (\count($shape->items) <= $this->multilineShape) {
             /** @var non-empty-string */
             return \vsprintf('{%s}', [
                 \implode(', ', $this->getShapeFieldsNodes($node, $shape)),
@@ -411,7 +409,7 @@ class PrettyPrinter extends Printer
 
         $fields = [];
 
-        foreach ($shape->list as $field) {
+        foreach ($shape->items as $field) {
             $fields[] = $prefix . $this->printShapeFieldNode($field);
         }
 
@@ -444,19 +442,20 @@ class PrettyPrinter extends Printer
             /** @var non-empty-string */
             return \vsprintf('%s: %s', [
                 $name,
-                $this->make($field->getValue()),
+                $this->make($field->getType()),
             ]);
         }
 
-        return $this->make($field->getValue());
+        /** @var non-empty-string */
+        return $this->make($field->getType());
     }
 
     protected function printShapeFieldName(FieldNode $field): string
     {
         return match (true) {
-            $field instanceof StringNamedFieldNode => $field->name->getRawValue(),
-            $field instanceof NumericFieldNode => $field->index->getRawValue(),
-            $field instanceof NamedFieldNode => $field->name->toString(),
+            $field instanceof StringNamedFieldNode,
+            $field instanceof NumericFieldNode => $field->key->getRawValue(),
+            $field instanceof NamedFieldNode => $field->key->toString(),
             default => '',
         };
     }

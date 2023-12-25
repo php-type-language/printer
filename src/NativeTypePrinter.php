@@ -20,6 +20,7 @@ use TypeLang\Printer\Exception\NonPrintableNodeException;
 
 /**
  * @psalm-suppress UndefinedAttributeClass : For "Override" attribute support.
+ * @psalm-suppress InvalidAttribute : For "Override" attribute support.
  */
 class NativeTypePrinter extends PrettyPrinter
 {
