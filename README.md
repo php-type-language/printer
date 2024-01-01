@@ -18,7 +18,7 @@
 
 The PHP reference implementation for Type Language printer.
 
-Read [documentation pages](https://nesk.gitbook.io/php-type-language) for more
+Read [documentation pages](https://docs.phpdoc.io) for more
 information.
 
 ## Installation
