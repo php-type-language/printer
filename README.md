@@ -16,7 +16,7 @@
     <a href="https://github.com/php-type-language/printer/actions"><img src="https://github.com/php-type-language/printer/workflows/tests/badge.svg"></a>
 </p>
 
-The PHP reference implementation for Type Language printer.
+The PHP reference implementation for Type Language Printer.
 
 Read [documentation pages](https://docs.phpdoc.io) for more
 information.
