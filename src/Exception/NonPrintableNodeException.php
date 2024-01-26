@@ -8,9 +8,9 @@ use TypeLang\Parser\Node\Node;
 
 class NonPrintableNodeException extends \InvalidArgumentException implements PrinterExceptionInterface
 {
-    final public const CODE_INVALID_NODE = 0x01;
+    final public const ERROR_CODE_INVALID_NODE = 0x01;
 
-    public const CODE_LAST = self::CODE_INVALID_NODE;
+    protected const CODE_LAST = self::ERROR_CODE_INVALID_NODE;
 
     final public function __construct(string $message, int $code = 0, ?\Throwable $previous = null)
     {
@@ -21,6 +21,6 @@ class NonPrintableNodeException extends \InvalidArgumentException implements Pri
     {
         $message = \sprintf('Could not print unknown node "%s"', $node::class);
 
-        return new static($message, self::CODE_INVALID_NODE);
+        return new static($message, self::ERROR_CODE_INVALID_NODE);
     }
 }
