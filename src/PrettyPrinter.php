@@ -167,7 +167,7 @@ class PrettyPrinter extends Printer
         /** @var non-empty-string */
         return \vsprintf('%s::%s', [
             $node->class->toString(),
-            (string)$node->constant?->toString(),
+            (string) $node->constant?->toString(),
         ]);
     }
 
@@ -179,7 +179,7 @@ class PrettyPrinter extends Printer
         /** @var non-empty-string */
         return \vsprintf('%s::%s', [
             $node->class->toString(),
-            (string)($node->constant?->toString()) . '*',
+            (string) ($node->constant?->toString()) . '*',
         ]);
     }
 
