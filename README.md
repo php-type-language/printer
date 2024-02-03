@@ -18,7 +18,7 @@
 
 The PHP reference implementation for Type Language Printer.
 
-Read [documentation pages](https://docs.phpdoc.io) for more
+Read [documentation pages](https://phpdoc.io) for more
 information.
 
 ## Installation
