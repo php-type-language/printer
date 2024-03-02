@@ -18,12 +18,13 @@
 
 The PHP reference implementation for Type Language Printer.
 
-Read [documentation pages](https://phpdoc.io) for more
-information.
+## Resources
+
+- [Documentation](https://phpdoc.io)
 
 ## Installation
 
-Type Language Printer is available as composer repository and can be installed
+Type Language Printer is available as Composer repository and can be installed
 using the following command in a root of your project:
 
 ```sh
