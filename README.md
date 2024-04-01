@@ -14,7 +14,7 @@
     <a href="https://github.com/php-type-language/printer/actions"><img src="https://github.com/php-type-language/printer/workflows/tests/badge.svg"></a>
 </p>
 
-The PHP reference implementation for Type Language Printer.
+Reference implementation for TypeLang Printer.
 
 ## Resources
 
@@ -22,7 +22,7 @@ The PHP reference implementation for Type Language Printer.
 
 ## Installation
 
-Type Language Printer is available as Composer repository and can be installed
+TypeLang Printer is available as Composer repository and can be installed
 using the following command in a root of your project:
 
 ```sh

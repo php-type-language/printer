@@ -1,7 +1,7 @@
 {
     "name": "type-lang/printer",
     "type": "library",
-    "description": "PHP Types Printer",
+    "description": "Library for rendering TypeLange AST nodes into it's string representation",
     "keywords": ["printer", "language", "php", "printer", "render"],
     "license": "MIT",
     "support": {
