@@ -18,7 +18,7 @@ Reference implementation for TypeLang Printer.
 
 ## Resources
 
-- [Documentation](https://phpdoc.io)
+- [Documentation](https://typelang.dev)
 
 ## Installation
 
