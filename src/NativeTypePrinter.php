@@ -104,7 +104,7 @@ class NativeTypePrinter extends PrettyPrinter
     public function __construct(
         array $aliases = [],
         string $newLine = self::DEFAULT_NEW_LINE_DELIMITER,
-        string $indention = self::DEFAULT_INDENTION
+        string $indention = self::DEFAULT_INDENTION,
     ) {
         parent::__construct($newLine, $indention);
 
@@ -210,7 +210,7 @@ class NativeTypePrinter extends PrettyPrinter
         try {
             /** @var non-empty-string */
             return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
-                \implode('|', [...$this->unwrapAndPrint($node)])
+                \implode('|', [...$this->unwrapAndPrint($node)]),
             ]);
         } finally {
             ++$this->nesting;
@@ -223,7 +223,7 @@ class NativeTypePrinter extends PrettyPrinter
         try {
             /** @var non-empty-string */
             return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
-                \implode('&', [...$this->unwrapAndPrint($node)])
+                \implode('&', [...$this->unwrapAndPrint($node)]),
             ]);
         } finally {
             ++$this->nesting;
