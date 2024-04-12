@@ -96,7 +96,13 @@ abstract class Printer implements PrinterInterface
         }
 
         /** @var list<non-empty-string> */
-        return \array_unique($result);
+        $result = \array_unique($result);
+
+        if (\in_array('mixed', $result, true)) {
+            return ['mixed'];
+        }
+
+        return  $result;
     }
 
     /**
