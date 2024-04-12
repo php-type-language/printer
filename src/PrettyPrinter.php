@@ -12,6 +12,10 @@ use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
 use TypeLang\Parser\Node\Stmt\ClassConstNode;
 use TypeLang\Parser\Node\Stmt\Condition\Condition;
 use TypeLang\Parser\Node\Stmt\Condition\EqualConditionNode;
+use TypeLang\Parser\Node\Stmt\Condition\GreaterOrEqualThanConditionNode;
+use TypeLang\Parser\Node\Stmt\Condition\GreaterThanConditionNode;
+use TypeLang\Parser\Node\Stmt\Condition\LessOrEqualThanConditionNode;
+use TypeLang\Parser\Node\Stmt\Condition\LessThanConditionNode;
 use TypeLang\Parser\Node\Stmt\Condition\NotEqualConditionNode;
 use TypeLang\Parser\Node\Stmt\ConstMaskNode;
 use TypeLang\Parser\Node\Stmt\IntersectionTypeNode;
@@ -95,6 +99,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function make(Statement $stmt): string
     {
@@ -116,6 +121,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function printTypeListNode(TypesListNode $node): string
     {
@@ -126,6 +132,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function printTernaryType(TernaryConditionNode $node): string
     {
@@ -141,18 +148,24 @@ class PrettyPrinter extends Printer
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function printCondition(Condition $node): string
     {
         return match (true) {
             $node instanceof EqualConditionNode => 'is',
             $node instanceof NotEqualConditionNode => 'is not',
+            $node instanceof GreaterOrEqualThanConditionNode => '>=',
+            $node instanceof LessOrEqualThanConditionNode => '<=',
+            $node instanceof GreaterThanConditionNode => '>',
+            $node instanceof LessThanConditionNode => '<',
             default => throw NonPrintableNodeException::fromInvalidNode($node),
         };
     }
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function printNullableType(NullableTypeNode $node): string
     {
@@ -193,6 +206,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function printCallableTypeNode(CallableTypeNode $node): string
     {
@@ -253,6 +267,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function printCallableArgumentNode(ParameterNode $node): string
     {
@@ -340,6 +355,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function printNamedTypeNode(NamedTypeNode $node): string
     {
@@ -357,6 +373,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function printTemplateArgumentsNode(TemplateArgumentsListNode $params): string
     {
@@ -372,14 +389,22 @@ class PrettyPrinter extends Printer
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function printTemplateArgumentNode(TemplateArgumentNode $param): string
     {
-        return $this->make($param->value);
+        $result = $this->make($param->value);
+
+        if ($param->hint !== null) {
+            return $param->hint->toString() . ' ' . $result;
+        }
+
+        return $result;
     }
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function printShapeFieldsNode(NamedTypeNode $node, FieldsListNode $shape): string
     {
@@ -402,6 +427,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @return list<non-empty-string>
+     * @throws NonPrintableNodeException
      */
     private function getShapeFieldsNodes(NamedTypeNode $node, FieldsListNode $shape): array
     {
@@ -429,6 +455,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
     protected function printShapeFieldNode(FieldNode $field): string
     {
