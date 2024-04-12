@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
+use TypeLang\Parser\Node\Literal\LiteralNode;
+use TypeLang\Parser\Node\Literal\VariableLiteralNode;
 use TypeLang\Parser\Node\Stmt\CallableTypeNode;
 use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
 use TypeLang\Parser\Node\Stmt\ClassConstNode;
@@ -189,13 +191,13 @@ class NativeTypePrinter extends PrettyPrinter
     #[\Override]
     protected function printClassConstMaskNode(ClassConstMaskNode $node): string
     {
-        return 'int';
+        return 'mixed';
     }
 
     #[\Override]
     protected function printConstMaskNode(ConstMaskNode $node): string
     {
-        return 'int';
+        return 'mixed';
     }
 
     #[\Override]
@@ -250,5 +252,19 @@ class NativeTypePrinter extends PrettyPrinter
     protected function printNamedTypeNode(NamedTypeNode $node): string
     {
         return $this->getTypeName($node->name->toString());
+    }
+
+    #[\Override]
+    protected function printLiteralNode(LiteralNode $node): string
+    {
+        if ($node instanceof VariableLiteralNode) {
+            if ($node->getValue() === 'this') {
+                return 'self';
+            }
+
+            return 'mixed';
+        }
+
+        return parent::printLiteralNode($node);
     }
 }
