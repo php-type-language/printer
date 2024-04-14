@@ -6,6 +6,7 @@ namespace TypeLang\Printer;
 
 use TypeLang\Parser\Node\Statement;
 use TypeLang\Parser\Node\Stmt\LogicalTypeNode;
+use TypeLang\Parser\Node\Stmt\TypeStatement;
 
 abstract class Printer implements PrinterInterface
 {
@@ -95,23 +96,25 @@ abstract class Printer implements PrinterInterface
             $result[] = $this->make($stmt);
         }
 
-        /** @var list<non-empty-string> */
         $result = \array_unique($result);
 
         if (\in_array('mixed', $result, true)) {
             return ['mixed'];
         }
 
-        return  $result;
+        /** @var list<non-empty-string> */
+        return $result;
     }
 
     /**
-     * @return iterable<array-key, Statement>
+     * @template T of TypeStatement
+     * @param LogicalTypeNode<T> $logical
+     * @return iterable<array-key, T>
      */
     protected function unwrap(LogicalTypeNode $logical): iterable
     {
         foreach ($logical->statements as $statement) {
-            if ($statement instanceof $logical && $statement instanceof LogicalTypeNode) {
+            if ($statement instanceof $logical) {
                 yield from $this->unwrap($statement);
             } else {
                 yield $statement;
@@ -120,7 +123,9 @@ abstract class Printer implements PrinterInterface
     }
 
     /**
-     * @return iterable<array-key, non-empty-string>
+     * @param LogicalTypeNode<TypeStatement> $stmt
+     *
+     * @return list<non-empty-string>
      */
     protected function unwrapAndPrint(LogicalTypeNode $stmt): iterable
     {

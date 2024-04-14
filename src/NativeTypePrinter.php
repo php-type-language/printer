@@ -20,10 +20,6 @@ use TypeLang\Parser\Node\Stmt\TypesListNode;
 use TypeLang\Parser\Node\Stmt\UnionTypeNode;
 use TypeLang\Printer\Exception\NonPrintableNodeException;
 
-/**
- * @psalm-suppress UndefinedAttributeClass : For "Override" attribute support.
- * @psalm-suppress InvalidAttribute : For "Override" attribute support.
- */
 class NativeTypePrinter extends PrettyPrinter
 {
     /**
@@ -121,20 +117,6 @@ class NativeTypePrinter extends PrettyPrinter
      */
     public function addTypeAlias(string $alias, string $type): void
     {
-        if (\str_contains($type, '|')) {
-            /** @psalm-suppress ArgumentTypeCoercion */
-            $this->addUnionTypeAlias($alias, \explode('|', $type));
-
-            return;
-        }
-
-        if (\str_contains($type, '&')) {
-            /** @psalm-suppress ArgumentTypeCoercion */
-            $this->addUnionTypeAlias($alias, \explode('&', $type));
-
-            return;
-        }
-
         $this->aliases[\strtolower($alias)] = $type;
     }
 
@@ -210,7 +192,6 @@ class NativeTypePrinter extends PrettyPrinter
     protected function printUnionTypeNode(UnionTypeNode $node): string
     {
         try {
-            /** @var non-empty-string */
             return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
                 \implode('|', [...$this->unwrapAndPrint($node)]),
             ]);
@@ -223,7 +204,6 @@ class NativeTypePrinter extends PrettyPrinter
     protected function printIntersectionTypeNode(IntersectionTypeNode $node): string
     {
         try {
-            /** @var non-empty-string */
             return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
                 \implode('&', [...$this->unwrapAndPrint($node)]),
             ]);

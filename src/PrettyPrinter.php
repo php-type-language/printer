@@ -120,6 +120,7 @@ class PrettyPrinter extends Printer
     }
 
     /**
+     * @param TypesListNode<TypeStatement> $node
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
@@ -136,7 +137,6 @@ class PrettyPrinter extends Printer
      */
     protected function printTernaryType(TernaryConditionNode $node): string
     {
-        /** @var non-empty-string */
         return \vsprintf('(%s %s %s ? %s : %s)', [
             $this->make($node->condition->subject),
             $this->printCondition($node->condition),
@@ -164,6 +164,7 @@ class PrettyPrinter extends Printer
     }
 
     /**
+     * @param NullableTypeNode<TypeStatement> $node
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
@@ -177,7 +178,6 @@ class PrettyPrinter extends Printer
      */
     protected function printClassConstNode(ClassConstNode $node): string
     {
-        /** @var non-empty-string */
         return \vsprintf('%s::%s', [
             $node->class->toString(),
             (string) $node->constant?->toString(),
@@ -189,7 +189,6 @@ class PrettyPrinter extends Printer
      */
     protected function printClassConstMaskNode(ClassConstMaskNode $node): string
     {
-        /** @var non-empty-string */
         return \vsprintf('%s::%s', [
             $node->class->toString(),
             (string) ($node->constant?->toString()) . '*',
@@ -296,6 +295,7 @@ class PrettyPrinter extends Printer
         }
 
         if ($node->name !== null) {
+            // @phpstan-ignore-next-line : VariableLiteralNode is a subtype of LiteralNode
             $result[] = $this->printLiteralNode($node->name);
         }
 
@@ -307,6 +307,7 @@ class PrettyPrinter extends Printer
     }
 
     /**
+     * @param UnionTypeNode<TypeStatement> $node
      * @return non-empty-string
      */
     protected function printUnionTypeNode(UnionTypeNode $node): string
@@ -314,7 +315,6 @@ class PrettyPrinter extends Printer
         $delimiter = $this->wrapUnionType ? ' | ' : '|';
 
         try {
-            /** @var non-empty-string */
             return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
                 \implode($delimiter, [
                     ...$this->unwrapAndPrint($node),
@@ -326,6 +326,7 @@ class PrettyPrinter extends Printer
     }
 
     /**
+     * @param IntersectionTypeNode<TypeStatement> $node
      * @return non-empty-string
      */
     protected function printIntersectionTypeNode(IntersectionTypeNode $node): string
@@ -333,7 +334,6 @@ class PrettyPrinter extends Printer
         $delimiter = $this->wrapIntersectionType ? ' & ' : '&';
 
         try {
-            /** @var non-empty-string */
             return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
                 \implode($delimiter, [
                     ...$this->unwrapAndPrint($node),
@@ -345,6 +345,7 @@ class PrettyPrinter extends Printer
     }
 
     /**
+     * @param LiteralNode<mixed> $node
      * @return non-empty-string
      */
     protected function printLiteralNode(LiteralNode $node): string
@@ -383,7 +384,6 @@ class PrettyPrinter extends Printer
             $result[] = $this->printTemplateArgumentNode($param);
         }
 
-        /** @var non-empty-string */
         return \sprintf('<%s>', \implode(', ', $result));
     }
 
@@ -409,13 +409,11 @@ class PrettyPrinter extends Printer
     protected function printShapeFieldsNode(NamedTypeNode $node, FieldsListNode $shape): string
     {
         if (\count($shape->items) <= $this->multilineShape) {
-            /** @var non-empty-string */
             return \vsprintf('{%s}', [
                 \implode(', ', $this->getShapeFieldsNodes($node, $shape)),
             ]);
         }
 
-        /** @var non-empty-string */
         return \vsprintf('{%s%s%s}', [
             $this->newLine,
             \implode(',' . $this->newLine, $this->nested(
@@ -466,7 +464,6 @@ class PrettyPrinter extends Printer
                 $name .= '?';
             }
 
-            /** @var non-empty-string */
             return \vsprintf('%s: %s', [
                 $name,
                 $this->make($field->getType()),
