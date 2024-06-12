@@ -54,7 +54,7 @@ abstract class Printer implements PrinterInterface
     /**
      * @param int<0, max>|null $depth
      */
-    protected function prefix(int $depth = null): string
+    protected function prefix(?int $depth = null): string
     {
         $depth ??= $this->depth;
 
@@ -108,7 +108,9 @@ abstract class Printer implements PrinterInterface
 
     /**
      * @template T of TypeStatement
+     *
      * @param LogicalTypeNode<T> $logical
+     *
      * @return iterable<array-key, T>
      */
     protected function unwrap(LogicalTypeNode $logical): iterable

@@ -4,8 +4,9 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
-use TypeLang\Parser\Node\Node;
 use TypeLang\Parser\Node\Literal\LiteralNode;
+use TypeLang\Parser\Node\Node;
+use TypeLang\Parser\Node\Statement;
 use TypeLang\Parser\Node\Stmt\Callable\ParameterNode;
 use TypeLang\Parser\Node\Stmt\CallableTypeNode;
 use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
@@ -26,7 +27,6 @@ use TypeLang\Parser\Node\Stmt\Shape\FieldNode;
 use TypeLang\Parser\Node\Stmt\Shape\FieldsListNode;
 use TypeLang\Parser\Node\Stmt\Shape\NamedFieldNode;
 use TypeLang\Parser\Node\Stmt\Shape\NumericFieldNode;
-use TypeLang\Parser\Node\Statement;
 use TypeLang\Parser\Node\Stmt\Shape\StringNamedFieldNode;
 use TypeLang\Parser\Node\Stmt\Template\ArgumentNode as TemplateArgumentNode;
 use TypeLang\Parser\Node\Stmt\Template\ArgumentsListNode as TemplateArgumentsListNode;
@@ -121,6 +121,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @param TypesListNode<TypeStatement> $node
+     *
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
@@ -165,6 +166,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @param NullableTypeNode<TypeStatement> $node
+     *
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
@@ -191,7 +193,7 @@ class PrettyPrinter extends Printer
     {
         return \vsprintf('%s::%s', [
             $node->class->toString(),
-            (string) ($node->constant?->toString()) . '*',
+            (string) $node->constant?->toString() . '*',
         ]);
     }
 
@@ -308,6 +310,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @param UnionTypeNode<TypeStatement> $node
+     *
      * @return non-empty-string
      */
     protected function printUnionTypeNode(UnionTypeNode $node): string
@@ -327,6 +330,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @param IntersectionTypeNode<TypeStatement> $node
+     *
      * @return non-empty-string
      */
     protected function printIntersectionTypeNode(IntersectionTypeNode $node): string
@@ -346,6 +350,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @param LiteralNode<mixed> $node
+     *
      * @return non-empty-string
      */
     protected function printLiteralNode(LiteralNode $node): string
