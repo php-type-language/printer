@@ -26,7 +26,7 @@ TypeLang Printer is available as Composer repository and can be installed
 using the following command in a root of your project:
 
 ```sh
-$ composer require type-lang/printer
+composer require type-lang/printer
 ```
 
 ## Quick Start
