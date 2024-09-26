@@ -7,6 +7,8 @@ namespace TypeLang\Printer;
 use TypeLang\Parser\Node\Literal\LiteralNode;
 use TypeLang\Parser\Node\Node;
 use TypeLang\Parser\Node\Statement;
+use TypeLang\Parser\Node\Stmt\Attribute\AttributeGroupNode;
+use TypeLang\Parser\Node\Stmt\Attribute\AttributeGroupsListNode;
 use TypeLang\Parser\Node\Stmt\Callable\ParameterNode;
 use TypeLang\Parser\Node\Stmt\CallableTypeNode;
 use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
@@ -28,8 +30,8 @@ use TypeLang\Parser\Node\Stmt\Shape\FieldsListNode;
 use TypeLang\Parser\Node\Stmt\Shape\NamedFieldNode;
 use TypeLang\Parser\Node\Stmt\Shape\NumericFieldNode;
 use TypeLang\Parser\Node\Stmt\Shape\StringNamedFieldNode;
-use TypeLang\Parser\Node\Stmt\Template\ArgumentNode as TemplateArgumentNode;
-use TypeLang\Parser\Node\Stmt\Template\ArgumentsListNode as TemplateArgumentsListNode;
+use TypeLang\Parser\Node\Stmt\Template\TemplateArgumentNode as TemplateArgumentNode;
+use TypeLang\Parser\Node\Stmt\Template\TemplateArgumentsListNode as TemplateArgumentsListNode;
 use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
 use TypeLang\Parser\Node\Stmt\TypesListNode;
 use TypeLang\Parser\Node\Stmt\TypeStatement;
@@ -40,62 +42,89 @@ use TypeLang\Printer\Exception\NonPrintableNodeException;
 class PrettyPrinter extends Printer
 {
     /**
-     * Wrap union type (joined by "|") by whitespaces.
-     *
-     * ```
-     * $wrapUnionType = true;
-     * // Type | Some | Any
-     *
-     * $wrapUnionType = false;
-     * // Type|Some|Any
-     * ```
+     * @var bool
      */
-    public bool $wrapUnionType = false;
+    public const DEFAULT_WRAP_INTERSECTION_TYPE = true;
 
     /**
-     * Wrap intersection type (joined by "&") by whitespaces.
-     *
-     * ```
-     *  $wrapIntersectionType = true;
-     *  // Type & Some & Any
-     *
-     *  $wrapIntersectionType = false;
-     *  // Type&Some&Any
-     *  ```
+     * @var bool
      */
-    public bool $wrapIntersectionType = true;
+    public const DEFAULT_WRAP_UNION_TYPE = true;
 
     /**
-     * Add whitespace at the start of callable return type.
-     *
-     * ```
-     * $wrapCallableReturnType = true;
-     * // callable(): void
-     *
-     * $wrapCallableReturnType = false;
-     * // callable():void
-     * ```
+     * @var bool
      */
-    public bool $wrapCallableReturnType = true;
+    public const DEFAULT_WRAP_CALLABLE_RETURN_TYPE = true;
 
     /**
-     * The number of elements in the shape after which it is
-     * formatted as multiline.
-     *
-     * ```
-     * $multilineShape = 2;
-     * // array{some, any}
-     *
-     * $multilineShape = 1;
-     * // array{
-     * //     some,
-     * //     any
-     * // }
-     * ```
-     *
      * @var int<0, max>
      */
-    public int $multilineShape = 1;
+    public const DEFAULT_MULTILINE_SHAPE = 1;
+
+    /**
+     * @param non-empty-string $newLine
+     * @param non-empty-string $indention
+     */
+    public function __construct(
+        string $newLine = self::DEFAULT_NEW_LINE_DELIMITER,
+        string $indention = self::DEFAULT_INDENTION,
+        /**
+         * Wrap union type (joined by "|") by whitespaces.
+         *
+         * ```
+         * $wrapUnionType = true;
+         * // Type | Some | Any
+         *
+         * $wrapUnionType = false;
+         * // Type|Some|Any
+         * ```
+         */
+        public bool $wrapUnionType = self::DEFAULT_WRAP_UNION_TYPE,
+        /**
+         * Wrap intersection type (joined by "&") by whitespaces.
+         *
+         * ```
+         *  $wrapIntersectionType = true;
+         *  // Type & Some & Any
+         *
+         *  $wrapIntersectionType = false;
+         *  // Type&Some&Any
+         *  ```
+         */
+        public bool $wrapIntersectionType = self::DEFAULT_WRAP_INTERSECTION_TYPE,
+        /**
+         * Add whitespace at the start of callable return type.
+         *
+         * ```
+         * $wrapCallableReturnType = true;
+         * // callable(): void
+         *
+         * $wrapCallableReturnType = false;
+         * // callable():void
+         * ```
+         */
+        public bool $wrapCallableReturnType = self::DEFAULT_WRAP_CALLABLE_RETURN_TYPE,
+        /**
+         * The number of elements in the shape after which it is
+         * formatted as multiline.
+         *
+         * ```
+         * $multilineShape = 2;
+         * // array{some, any}
+         *
+         * $multilineShape = 1;
+         * // array{
+         * //     some,
+         * //     any
+         * // }
+         * ```
+         *
+         * @var int<0, max>
+         */
+        public int $multilineShape = self::DEFAULT_MULTILINE_SHAPE,
+    ) {
+        parent::__construct($newLine, $indention);
+    }
 
     /**
      * @return non-empty-string
@@ -120,59 +149,183 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @param TypesListNode<TypeStatement> $node
+     * @param LiteralNode<mixed> $node
      *
      * @return non-empty-string
-     * @throws NonPrintableNodeException
      */
-    protected function printTypeListNode(TypesListNode $node): string
+    protected function printLiteralNode(LiteralNode $node): string
     {
-        $result = $this->make($node->type);
-
-        return $result . '[]';
+        /** @var non-empty-string */
+        return $node->getRawValue();
     }
 
     /**
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function printTernaryType(TernaryConditionNode $node): string
+    protected function printNamedTypeNode(NamedTypeNode $node): string
     {
-        return \vsprintf('(%s %s %s ? %s : %s)', [
-            $this->make($node->condition->subject),
-            $this->printCondition($node->condition),
-            $this->make($node->condition->target),
-            $this->make($node->then),
-            $this->make($node->else),
+        $result = $node->name->toString();
+
+        if ($node->fields !== null) {
+            $result .= $this->printShapeFieldsNode($node, $node->fields);
+        } elseif ($node->arguments !== null) {
+            $result .= $this->printTemplateArgumentsNode($node->arguments);
+        }
+
+        /** @var non-empty-string */
+        return $result;
+    }
+
+    /**
+     * @return non-empty-string
+     * @throws NonPrintableNodeException
+     */
+    protected function printShapeFieldsNode(NamedTypeNode $node, FieldsListNode $shape): string
+    {
+        if (\count($shape->items) <= $this->multilineShape) {
+            return \vsprintf('{%s}', [
+                \implode(', ', $this->getShapeFieldsNodes($node, $shape, false)),
+            ]);
+        }
+
+        return \vsprintf('{%s%s%s}', [
+            $this->newLine,
+            \implode(',' . $this->newLine, $this->nested(section: fn(): array
+                => $this->getShapeFieldsNodes($node, $shape, true))),
+            $this->newLine . $this->prefix(),
         ]);
     }
 
     /**
+     * @return list<non-empty-string>
+     * @throws NonPrintableNodeException
+     */
+    private function getShapeFieldsNodes(NamedTypeNode $node, FieldsListNode $shape, bool $multiline): array
+    {
+        $prefix = $this->prefix();
+
+        $fields = [];
+
+        foreach ($shape->items as $field) {
+            $current = '';
+
+            if ($field->attributes !== null) {
+                $current .= $this->printAttributeGroups($field->attributes, $multiline);
+            }
+
+            $fields[] = $current . $prefix . $this->printShapeFieldNode($field);
+        }
+
+        if (!$shape->sealed || $node->arguments !== null) {
+            $prefix .= '...';
+
+            if ($node->arguments !== null) {
+                $prefix .= $this->printTemplateArgumentsNode($node->arguments);
+            }
+
+            $fields[] = $prefix;
+        }
+
+        /** @var list<non-empty-string> */
+        return $fields;
+    }
+
+    protected function printAttributeGroups(AttributeGroupsListNode $groups, bool $multiline): string
+    {
+        $prefix = $this->prefix();
+        $result = '';
+
+        foreach ($groups as $group) {
+            $result .= $prefix . $this->printAttributeGroup($group);
+            $result .= $multiline ? $this->newLine : ' ';
+        }
+
+        return $result;
+    }
+
+    protected function printAttributeGroup(AttributeGroupNode $group): string
+    {
+        $result = '#[';
+
+        $last = $group->last();
+        foreach ($group as $attribute) {
+            $result .= $attribute->name->toString();
+
+            if ($attribute !== $last) {
+                $result .= ', ';
+            }
+        }
+
+        return $result . ']';
+    }
+
+    /**
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function printCondition(Condition $node): string
+    protected function printShapeFieldNode(FieldNode $field): string
+    {
+        $name = $this->printShapeFieldName($field);
+
+        if ($name !== '') {
+            if ($field->optional) {
+                $name .= '?';
+            }
+
+            return \vsprintf('%s: %s', [
+                $name,
+                $this->make($field->getType()),
+            ]);
+        }
+
+        /** @var non-empty-string */
+        return $this->make($field->getType());
+    }
+
+    protected function printShapeFieldName(FieldNode $field): string
     {
         return match (true) {
-            $node instanceof EqualConditionNode => 'is',
-            $node instanceof NotEqualConditionNode => 'is not',
-            $node instanceof GreaterOrEqualThanConditionNode => '>=',
-            $node instanceof LessOrEqualThanConditionNode => '<=',
-            $node instanceof GreaterThanConditionNode => '>',
-            $node instanceof LessThanConditionNode => '<',
-            default => throw NonPrintableNodeException::fromInvalidNode($node),
+            $field instanceof StringNamedFieldNode, $field instanceof NumericFieldNode => $field->key->getRawValue(),
+            $field instanceof NamedFieldNode => $field->key->toString(),
+            default => '',
         };
     }
 
     /**
-     * @param NullableTypeNode<TypeStatement> $node
-     *
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function printNullableType(NullableTypeNode $node): string
+    protected function printTemplateArgumentsNode(TemplateArgumentsListNode $arguments): string
     {
-        return '?' . $this->make($node->type);
+        $result = [];
+
+        foreach ($arguments as $argument) {
+            $current = '';
+
+            if ($argument->attributes !== null) {
+                $current .= $this->printAttributeGroups($argument->attributes, false);
+            }
+
+            $result[] = $current . $this->printTemplateArgumentNode($argument);
+        }
+
+        return \sprintf('<%s>', \implode(', ', $result));
+    }
+
+    /**
+     * @return non-empty-string
+     * @throws NonPrintableNodeException
+     */
+    protected function printTemplateArgumentNode(TemplateArgumentNode $argument): string
+    {
+        $result = $this->make($argument->value);
+
+        if ($argument->hint !== null) {
+            return $argument->hint->toString() . ' ' . $result;
+        }
+
+        return $result;
     }
 
     /**
@@ -182,7 +335,7 @@ class PrettyPrinter extends Printer
     {
         return \vsprintf('%s::%s', [
             $node->class->toString(),
-            (string) $node->constant?->toString(),
+            (string)$node->constant?->toString(),
         ]);
     }
 
@@ -193,7 +346,7 @@ class PrettyPrinter extends Printer
     {
         return \vsprintf('%s::%s', [
             $node->class->toString(),
-            (string) $node->constant?->toString() . '*',
+            (string)$node->constant?->toString() . '*',
         ]);
     }
 
@@ -235,35 +388,6 @@ class PrettyPrinter extends Printer
         }
 
         return $result;
-    }
-
-    protected function shouldWrapReturnType(TypeStatement $type): bool
-    {
-        if ($type instanceof LogicalTypeNode) {
-            return true;
-        }
-
-        $visitor = Traverser::through(
-            visitor: new Traverser\ClassNameMatcherVisitor(
-                class: LogicalTypeNode::class,
-                break: static function (Node $node): bool {
-                    // Break on non-empty template parameters.
-                    $isInTemplate = $node instanceof NamedTypeNode
-                        && $node->arguments !== null
-                        && $node->arguments->items !== [];
-
-                    // Break on non-empty shape fields.
-                    $isInShape = $node instanceof NamedTypeNode
-                        && $node->fields !== null
-                        && $node->fields->items !== [];
-
-                    return $isInTemplate || $isInShape;
-                },
-            ),
-            nodes: [$type],
-        );
-
-        return $visitor->isFound();
     }
 
     /**
@@ -308,6 +432,30 @@ class PrettyPrinter extends Printer
         return \implode('', $result);
     }
 
+    protected function shouldWrapReturnType(TypeStatement $type): bool
+    {
+        if ($type instanceof LogicalTypeNode) {
+            return true;
+        }
+
+        $visitor = Traverser::through(
+            visitor: new Traverser\ClassNameMatcherVisitor(
+                class: LogicalTypeNode::class, break: static function (Node $node): bool {
+                    // Break on non-empty template parameters.
+                    $isInTemplate = $node instanceof NamedTypeNode && $node->arguments !== null && $node->arguments->items !== [];
+
+                    // Break on non-empty shape fields.
+                    $isInShape = $node instanceof NamedTypeNode && $node->fields !== null && $node->fields->items !== [];
+
+                    return $isInTemplate || $isInShape;
+                },
+            ),
+            nodes: [$type],
+        );
+
+        return $visitor->isFound();
+    }
+
     /**
      * @param UnionTypeNode<TypeStatement> $node
      *
@@ -349,143 +497,58 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @param LiteralNode<mixed> $node
+     * @param NullableTypeNode<TypeStatement> $node
      *
      * @return non-empty-string
+     * @throws NonPrintableNodeException
      */
-    protected function printLiteralNode(LiteralNode $node): string
+    protected function printNullableType(NullableTypeNode $node): string
     {
-        /** @var non-empty-string */
-        return $node->getRawValue();
+        return '?' . $this->make($node->type);
     }
 
     /**
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function printNamedTypeNode(NamedTypeNode $node): string
+    protected function printTernaryType(TernaryConditionNode $node): string
     {
-        $result = $node->name->toString();
-
-        if ($node->fields !== null) {
-            $result .= $this->printShapeFieldsNode($node, $node->fields);
-        } elseif ($node->arguments !== null) {
-            $result .= $this->printTemplateArgumentsNode($node->arguments);
-        }
-
-        /** @var non-empty-string */
-        return $result;
-    }
-
-    /**
-     * @return non-empty-string
-     * @throws NonPrintableNodeException
-     */
-    protected function printTemplateArgumentsNode(TemplateArgumentsListNode $params): string
-    {
-        $result = [];
-
-        foreach ($params->items as $param) {
-            $result[] = $this->printTemplateArgumentNode($param);
-        }
-
-        return \sprintf('<%s>', \implode(', ', $result));
-    }
-
-    /**
-     * @return non-empty-string
-     * @throws NonPrintableNodeException
-     */
-    protected function printTemplateArgumentNode(TemplateArgumentNode $param): string
-    {
-        $result = $this->make($param->value);
-
-        if ($param->hint !== null) {
-            return $param->hint->toString() . ' ' . $result;
-        }
-
-        return $result;
-    }
-
-    /**
-     * @return non-empty-string
-     * @throws NonPrintableNodeException
-     */
-    protected function printShapeFieldsNode(NamedTypeNode $node, FieldsListNode $shape): string
-    {
-        if (\count($shape->items) <= $this->multilineShape) {
-            return \vsprintf('{%s}', [
-                \implode(', ', $this->getShapeFieldsNodes($node, $shape)),
-            ]);
-        }
-
-        return \vsprintf('{%s%s%s}', [
-            $this->newLine,
-            \implode(',' . $this->newLine, $this->nested(
-                section: fn(): array => $this->getShapeFieldsNodes($node, $shape),
-            )),
-            $this->newLine . $this->prefix(),
+        return \vsprintf('(%s %s %s ? %s : %s)', [
+            $this->make($node->condition->subject),
+            $this->printCondition($node->condition),
+            $this->make($node->condition->target),
+            $this->make($node->then),
+            $this->make($node->else),
         ]);
     }
 
     /**
-     * @return list<non-empty-string>
-     * @throws NonPrintableNodeException
-     */
-    private function getShapeFieldsNodes(NamedTypeNode $node, FieldsListNode $shape): array
-    {
-        $prefix = $this->prefix();
-
-        $fields = [];
-
-        foreach ($shape->items as $field) {
-            $fields[] = $prefix . $this->printShapeFieldNode($field);
-        }
-
-        if (!$shape->sealed || $node->arguments !== null) {
-            $prefix .= '...';
-
-            if ($node->arguments !== null) {
-                $prefix .= $this->printTemplateArgumentsNode($node->arguments);
-            }
-
-            $fields[] = $prefix;
-        }
-
-        /** @var list<non-empty-string> */
-        return $fields;
-    }
-
-    /**
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function printShapeFieldNode(FieldNode $field): string
-    {
-        $name = $this->printShapeFieldName($field);
-
-        if ($name !== '') {
-            if ($field->optional) {
-                $name .= '?';
-            }
-
-            return \vsprintf('%s: %s', [
-                $name,
-                $this->make($field->getType()),
-            ]);
-        }
-
-        /** @var non-empty-string */
-        return $this->make($field->getType());
-    }
-
-    protected function printShapeFieldName(FieldNode $field): string
+    protected function printCondition(Condition $node): string
     {
         return match (true) {
-            $field instanceof StringNamedFieldNode,
-            $field instanceof NumericFieldNode => $field->key->getRawValue(),
-            $field instanceof NamedFieldNode => $field->key->toString(),
-            default => '',
+            $node instanceof EqualConditionNode => 'is',
+            $node instanceof NotEqualConditionNode => 'is not',
+            $node instanceof GreaterOrEqualThanConditionNode => '>=',
+            $node instanceof LessOrEqualThanConditionNode => '<=',
+            $node instanceof GreaterThanConditionNode => '>',
+            $node instanceof LessThanConditionNode => '<',
+            default => throw NonPrintableNodeException::fromInvalidNode($node),
         };
+    }
+
+    /**
+     * @param TypesListNode<TypeStatement> $node
+     *
+     * @return non-empty-string
+     * @throws NonPrintableNodeException
+     */
+    protected function printTypeListNode(TypesListNode $node): string
+    {
+        $result = $this->make($node->type);
+
+        return $result . '[]';
     }
 }

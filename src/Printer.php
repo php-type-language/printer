@@ -11,16 +11,6 @@ use TypeLang\Parser\Node\Stmt\TypeStatement;
 abstract class Printer implements PrinterInterface
 {
     /**
-     * @var int<0, max>
-     */
-    protected int $depth = 0;
-
-    /**
-     * @var int<0, max>
-     */
-    protected int $nesting = 0;
-
-    /**
      * @var non-empty-string
      */
     protected const DEFAULT_NEW_LINE_DELIMITER = "\n";
@@ -31,12 +21,24 @@ abstract class Printer implements PrinterInterface
     protected const DEFAULT_INDENTION = '    ';
 
     /**
-     * @param non-empty-string $newLine
-     * @param non-empty-string $indention
+     * @var int<0, max>
      */
+    protected int $depth = 0;
+
+    /**
+     * @var int<0, max>
+     */
+    protected int $nesting = 0;
+
     public function __construct(
-        protected readonly string $newLine = self::DEFAULT_NEW_LINE_DELIMITER,
-        protected readonly string $indention = self::DEFAULT_INDENTION,
+        /**
+         * @var non-empty-string
+         */
+        public readonly string $newLine = self::DEFAULT_NEW_LINE_DELIMITER,
+        /**
+         * @var non-empty-string
+         */
+        public readonly string $indention = self::DEFAULT_INDENTION,
     ) {}
 
     public function print(Statement $stmt): string
@@ -54,15 +56,15 @@ abstract class Printer implements PrinterInterface
     /**
      * @param int<0, max>|null $depth
      */
-    protected function prefix(?int $depth = null): string
+    protected function prefix(?int $depth = null, bool $force = false): string
     {
         $depth ??= $this->depth;
 
-        if ($depth <= 0) {
-            return '';
+        if ($depth > 0 || $force === true) {
+            return \str_repeat($this->indention, $depth);
         }
 
-        return \str_repeat($this->indention, $depth);
+        return '';
     }
 
     /**
@@ -84,6 +86,16 @@ abstract class Printer implements PrinterInterface
     }
 
     /**
+     * @param LogicalTypeNode<TypeStatement> $stmt
+     *
+     * @return list<non-empty-string>
+     */
+    protected function unwrapAndPrint(LogicalTypeNode $stmt): iterable
+    {
+        return $this->printMap($this->unwrap($stmt));
+    }
+
+    /**
      * @param iterable<mixed, Statement> $stmts
      *
      * @return list<non-empty-string>
@@ -96,14 +108,8 @@ abstract class Printer implements PrinterInterface
             $result[] = $this->make($stmt);
         }
 
-        $result = \array_unique($result);
-
-        if (\in_array('mixed', $result, true)) {
-            return ['mixed'];
-        }
-
         /** @var list<non-empty-string> */
-        return $result;
+        return \array_unique($result);
     }
 
     /**
@@ -122,15 +128,5 @@ abstract class Printer implements PrinterInterface
                 yield $statement;
             }
         }
-    }
-
-    /**
-     * @param LogicalTypeNode<TypeStatement> $stmt
-     *
-     * @return list<non-empty-string>
-     */
-    protected function unwrapAndPrint(LogicalTypeNode $stmt): iterable
-    {
-        return $this->printMap($this->unwrap($stmt));
     }
 }
