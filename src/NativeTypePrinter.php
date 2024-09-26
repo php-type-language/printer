@@ -4,10 +4,8 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
-use TypeLang\Parser\Node\Literal\BoolLiteralNode;
 use TypeLang\Parser\Node\Literal\LiteralNode;
 use TypeLang\Parser\Node\Literal\VariableLiteralNode;
-use TypeLang\Parser\Node\Statement;
 use TypeLang\Parser\Node\Stmt\CallableTypeNode;
 use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
 use TypeLang\Parser\Node\Stmt\ClassConstNode;
@@ -19,7 +17,6 @@ use TypeLang\Parser\Node\Stmt\IntersectionTypeNode;
 use TypeLang\Parser\Node\Stmt\NamedTypeNode;
 use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
 use TypeLang\Parser\Node\Stmt\TypesListNode;
-use TypeLang\Parser\Node\Stmt\TypeStatement;
 use TypeLang\Parser\Node\Stmt\UnionTypeNode;
 use TypeLang\Printer\Exception\NonPrintableNodeException;
 
@@ -116,6 +113,7 @@ class NativeTypePrinter extends PrettyPrinter
 
     /**
      * @api
+     *
      * @param non-empty-string $alias
      * @param non-empty-string $type
      */
@@ -126,6 +124,7 @@ class NativeTypePrinter extends PrettyPrinter
 
     /**
      * @api
+     *
      * @param non-empty-string $alias
      * @param non-empty-list<non-empty-string> $types
      */
@@ -138,6 +137,7 @@ class NativeTypePrinter extends PrettyPrinter
 
     /**
      * @api
+     *
      * @param non-empty-string $alias
      * @param non-empty-list<non-empty-string> $types
      */
@@ -210,6 +210,7 @@ class NativeTypePrinter extends PrettyPrinter
      * Replace "true" + "false" pair into "bool"
      *
      * @param list<non-empty-string> $result
+     *
      * @return list<non-empty-string>
      */
     private function formatBoolWithTrueAndFalse(array $result): array
@@ -234,6 +235,7 @@ class NativeTypePrinter extends PrettyPrinter
      * if one of the types is "mixed".
      *
      * @param list<non-empty-string> $result
+     *
      * @return list<non-empty-string>
      */
     private function formatUnionWithMixed(array $result): array

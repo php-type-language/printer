@@ -30,8 +30,8 @@ use TypeLang\Parser\Node\Stmt\Shape\FieldsListNode;
 use TypeLang\Parser\Node\Stmt\Shape\NamedFieldNode;
 use TypeLang\Parser\Node\Stmt\Shape\NumericFieldNode;
 use TypeLang\Parser\Node\Stmt\Shape\StringNamedFieldNode;
-use TypeLang\Parser\Node\Stmt\Template\TemplateArgumentNode as TemplateArgumentNode;
-use TypeLang\Parser\Node\Stmt\Template\TemplateArgumentsListNode as TemplateArgumentsListNode;
+use TypeLang\Parser\Node\Stmt\Template\TemplateArgumentNode;
+use TypeLang\Parser\Node\Stmt\Template\TemplateArgumentsListNode;
 use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
 use TypeLang\Parser\Node\Stmt\TypesListNode;
 use TypeLang\Parser\Node\Stmt\TypeStatement;
@@ -335,7 +335,7 @@ class PrettyPrinter extends Printer
     {
         return \vsprintf('%s::%s', [
             $node->class->toString(),
-            (string)$node->constant?->toString(),
+            (string) $node->constant?->toString(),
         ]);
     }
 
@@ -346,7 +346,7 @@ class PrettyPrinter extends Printer
     {
         return \vsprintf('%s::%s', [
             $node->class->toString(),
-            (string)$node->constant?->toString() . '*',
+            (string) $node->constant?->toString() . '*',
         ]);
     }
 
@@ -440,7 +440,8 @@ class PrettyPrinter extends Printer
 
         $visitor = Traverser::through(
             visitor: new Traverser\ClassNameMatcherVisitor(
-                class: LogicalTypeNode::class, break: static function (Node $node): bool {
+                class: LogicalTypeNode::class,
+                break: static function (Node $node): bool {
                     // Break on non-empty template parameters.
                     $isInTemplate = $node instanceof NamedTypeNode && $node->arguments !== null && $node->arguments->items !== [];
 
