@@ -402,10 +402,6 @@ class PrettyPrinter extends Printer
             $type = $this->make($node->type);
         }
 
-        if ($node->type instanceof LogicalTypeNode) {
-            $type = \sprintf('(%s)', $type);
-        }
-
         $result = [$type];
 
         if ($node->name !== null) {
@@ -443,10 +439,14 @@ class PrettyPrinter extends Printer
                 class: LogicalTypeNode::class,
                 break: static function (Node $node): bool {
                     // Break on non-empty template parameters.
-                    $isInTemplate = $node instanceof NamedTypeNode && $node->arguments !== null && $node->arguments->items !== [];
+                    $isInTemplate = $node instanceof NamedTypeNode
+                        && $node->arguments !== null
+                        && $node->arguments->items !== [];
 
                     // Break on non-empty shape fields.
-                    $isInShape = $node instanceof NamedTypeNode && $node->fields !== null && $node->fields->items !== [];
+                    $isInShape = $node instanceof NamedTypeNode
+                        && $node->fields !== null
+                        && $node->fields->items !== [];
 
                     return $isInTemplate || $isInShape;
                 },
@@ -466,15 +466,11 @@ class PrettyPrinter extends Printer
     {
         $delimiter = $this->wrapUnionType ? ' | ' : '|';
 
-        try {
-            return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
-                \implode($delimiter, [
-                    ...$this->unwrapAndPrint($node),
-                ]),
-            ]);
-        } finally {
-            ++$this->nesting;
-        }
+        return \vsprintf($this->nesting++ > 0 ? '(%s)' : '%s', [
+            \implode($delimiter, [
+                ...$this->unwrapAndPrint($node),
+            ]),
+        ]);
     }
 
     /**
@@ -486,15 +482,11 @@ class PrettyPrinter extends Printer
     {
         $delimiter = $this->wrapIntersectionType ? ' & ' : '&';
 
-        try {
-            return \vsprintf($this->nesting > 0 ? '(%s)' : '%s', [
-                \implode($delimiter, [
-                    ...$this->unwrapAndPrint($node),
-                ]),
-            ]);
-        } finally {
-            ++$this->nesting;
-        }
+        return \vsprintf($this->nesting++ > 0 ? '(%s)' : '%s', [
+            \implode($delimiter, [
+                ...$this->unwrapAndPrint($node),
+            ]),
+        ]);
     }
 
     /**
