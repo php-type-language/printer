@@ -420,6 +420,7 @@ class PrettyPrinter extends Printer
         }
 
         if ($node->name !== null) {
+            // @phpstan-ignore-next-line : VariableLiteralNode is a subtype of LiteralNode
             $result .= $this->printLiteralNode($node->name);
         }
 
