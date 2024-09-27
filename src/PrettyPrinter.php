@@ -396,36 +396,38 @@ class PrettyPrinter extends Printer
      */
     protected function printCallableArgumentNode(ParameterNode $node): string
     {
-        $type = 'mixed';
+        $result = 'mixed';
 
         if ($node->type !== null) {
-            $type = $this->make($node->type);
+            $result = $this->make($node->type);
         }
 
-        $result = [$type];
+        if ($node->attributes !== null) {
+            $result = $this->printAttributeGroups($node->attributes, false)
+                . $result;
+        }
 
         if ($node->name !== null) {
-            $result[] = ' ';
+            $result .= ' ';
         }
 
         if ($node->output) {
-            $result[] = '&';
+            $result .= '&';
         }
 
         if ($node->variadic) {
-            $result[] = '...';
+            $result .= '...';
         }
 
         if ($node->name !== null) {
-            // @phpstan-ignore-next-line : VariableLiteralNode is a subtype of LiteralNode
-            $result[] = $this->printLiteralNode($node->name);
+            $result .= $this->printLiteralNode($node->name);
         }
 
         if ($node->optional) {
-            $result[] = '=';
+            $result .= '=';
         }
 
-        return \implode('', $result);
+        return $result;
     }
 
     protected function shouldWrapReturnType(TypeStatement $type): bool
