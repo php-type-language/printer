@@ -170,7 +170,9 @@ final class SimplePrintTypesTest extends TestCase
     #[DataProvider('prettyPrintableTypesDataProvider')]
     public function testPrettyPrinting(TypeStatement $stmt, string $expected): void
     {
-        $printer = new PrettyPrinter();
+        $printer = new PrettyPrinter(
+            wrapUnionType: false,
+        );
 
         self::assertSame($expected, $printer->print($stmt));
     }
