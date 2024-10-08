@@ -30,8 +30,9 @@ use TypeLang\Parser\Node\Stmt\Shape\FieldsListNode;
 use TypeLang\Parser\Node\Stmt\Shape\NamedFieldNode;
 use TypeLang\Parser\Node\Stmt\Shape\NumericFieldNode;
 use TypeLang\Parser\Node\Stmt\Shape\StringNamedFieldNode;
-use TypeLang\Parser\Node\Stmt\Template\ArgumentNode as TemplateArgumentNode;
-use TypeLang\Parser\Node\Stmt\Template\ArgumentsListNode as TemplateArgumentsListNode;
+use TypeLang\Parser\Node\Stmt\Template\ArgumentNode;
+use TypeLang\Parser\Node\Stmt\Template\ArgumentsListNode;
+use TypeLang\Parser\Node\Stmt\Template\TemplateArgumentsListNode;
 use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
 use TypeLang\Parser\Node\Stmt\TypesListNode;
 use TypeLang\Parser\Node\Stmt\TypeStatement;
@@ -293,10 +294,11 @@ class PrettyPrinter extends Printer
     }
 
     /**
+     * @param ArgumentsListNode<ArgumentNode>|TemplateArgumentsListNode $arguments
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function printTemplateArgumentsNode(TemplateArgumentsListNode $arguments): string
+    protected function printTemplateArgumentsNode(ArgumentsListNode $arguments): string
     {
         $result = [];
 
@@ -317,7 +319,7 @@ class PrettyPrinter extends Printer
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function printTemplateArgumentNode(TemplateArgumentNode $argument): string
+    protected function printTemplateArgumentNode(ArgumentNode $argument): string
     {
         $result = $this->make($argument->value);
 
