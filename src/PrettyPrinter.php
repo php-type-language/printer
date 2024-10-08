@@ -295,6 +295,7 @@ class PrettyPrinter extends Printer
 
     /**
      * @param ArgumentsListNode<ArgumentNode>|TemplateArgumentsListNode $arguments
+     *
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
