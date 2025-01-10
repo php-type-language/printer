@@ -26,86 +26,26 @@ class NativeTypePrinter extends PrettyPrinter
     /**
      * @var array<non-empty-string, non-empty-string>
      */
-    private array $aliases = [
-        // never
-        'never-return' => 'never',
-        'never-returns' => 'never',
-        'no-return' => 'never',
-        'empty' => 'never',
-        'noreturn' => 'never',
-        // mixed
-        'value-of' => 'mixed',
-        'resource' => 'mixed',
-        'resource (closed)' => 'mixed',
-        'closed-resource' => 'mixed',
-        'non-empty-mixed' => 'mixed',
-        // int
-        'int-mask' => 'int',
-        'integer' => 'int',
-        'int-mask-of' => 'int',
-        'literal-int' => 'int',
-        'positive-int' => 'int',
-        'negative-int' => 'int',
-        'non-positive-int' => 'int',
-        'non-negative-int' => 'int',
-        'non-zero-int' => 'int',
-        // float
-        'double' => 'float',
-        // bool
-        'boolean' => 'bool',
-        // array
-        '__always-list' => 'array',
-        'associative-array' => 'array',
-        'list' => 'array',
-        'non-empty-list' => 'array',
-        'non-empty-array' => 'array',
-        // string
-        'class-string' => 'string',
-        'interface-string' => 'string',
-        'trait-string' => 'string',
-        'enum-string' => 'string',
-        'numeric-string' => 'string',
-        'literal-string' => 'string',
-        'non-empty-literal-string' => 'string',
-        'non-empty-string' => 'string',
-        'lowercase-string' => 'string',
-        'non-empty-lowercase-string' => 'string',
-        'truthy-string' => 'string',
-        'non-falsy-string' => 'string',
-        // object
-        'stringable-object' => 'object',
-        // string|\Stringable
-        '__stringandstringable' => 'string|stringable',
-        // int|string
-        'array-key' => 'int|string',
-        'key-of' => 'int|string',
-        // float|int
-        'number' => 'float|int',
-        // float|int|string
-        'numeric' => 'float|int|string',
-        // bool|float|int|string
-        'scalar' => 'bool|float|int|string',
-        'non-empty-scalar' => 'bool|float|int|string',
-        'empty-scalar' => 'bool|float|int|string',
-        // callable
-        'callable-array' => 'callable',
-        'callable-object' => 'callable',
-        'callable-string' => 'callable',
-        'pure-callable' => 'callable',
-        'pure-Closure' => \Closure::class,
-    ];
+    private array $aliases = [];
 
     /**
-     * @param array<non-empty-string, non-empty-string> $aliases
+     * @param iterable<non-empty-string, non-empty-string> $aliases
      * @param non-empty-string $newLine
      * @param non-empty-string $indention
      */
     public function __construct(
-        array $aliases = [],
+        iterable $aliases = [],
         string $newLine = self::DEFAULT_NEW_LINE_DELIMITER,
         string $indention = self::DEFAULT_INDENTION,
     ) {
         parent::__construct($newLine, $indention);
+
+        // preload phan type aliases
+        $this->aliases += require __DIR__ . '/../resources/aliases/phan.php';
+        // preload psalm type aliases
+        $this->aliases += require __DIR__ . '/../resources/aliases/psalm.php';
+        // preload phpstan type aliases
+        $this->aliases += require __DIR__ . '/../resources/aliases/phpstan.php';
 
         foreach ($aliases as $alias => $type) {
             $this->addTypeAlias($alias, $type);
