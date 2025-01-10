@@ -34,6 +34,7 @@ use TypeLang\Parser\Node\Stmt\Template\ArgumentNode;
 use TypeLang\Parser\Node\Stmt\Template\ArgumentsListNode;
 use TypeLang\Parser\Node\Stmt\Template\TemplateArgumentsListNode;
 use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
+use TypeLang\Parser\Node\Stmt\TypeOffsetAccessNode;
 use TypeLang\Parser\Node\Stmt\TypesListNode;
 use TypeLang\Parser\Node\Stmt\TypeStatement;
 use TypeLang\Parser\Node\Stmt\UnionTypeNode;
@@ -145,6 +146,7 @@ class PrettyPrinter extends Printer
             $stmt instanceof NullableTypeNode => $this->printNullableType($stmt),
             $stmt instanceof TernaryConditionNode => $this->printTernaryType($stmt),
             $stmt instanceof TypesListNode => $this->printTypeListNode($stmt),
+            $stmt instanceof TypeOffsetAccessNode => $this->printTypeOffsetAccessNode($stmt),
             default => throw NonPrintableNodeException::fromInvalidNode($stmt),
         };
     }
@@ -287,7 +289,8 @@ class PrettyPrinter extends Printer
     protected function printShapeFieldName(FieldNode $field): string
     {
         return match (true) {
-            $field instanceof StringNamedFieldNode, $field instanceof NumericFieldNode => $field->key->getRawValue(),
+            $field instanceof StringNamedFieldNode,
+            $field instanceof NumericFieldNode => $field->key->getRawValue(),
             $field instanceof NamedFieldNode => $field->key->toString(),
             default => '',
         };
@@ -549,5 +552,18 @@ class PrettyPrinter extends Printer
         $result = $this->make($node->type);
 
         return $result . '[]';
+    }
+
+    /**
+     * @param TypeOffsetAccessNode<TypeStatement> $node
+     *
+     * @return non-empty-string
+     * @throws NonPrintableNodeException
+     */
+    protected function printTypeOffsetAccessNode(TypeOffsetAccessNode $node): string
+    {
+        $result = $this->make($node->type);
+
+        return $result . '[' . $this->make($node->access) . ']';
     }
 }
