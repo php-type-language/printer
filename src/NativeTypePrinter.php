@@ -16,6 +16,7 @@ use TypeLang\Parser\Node\Stmt\ConstMaskNode;
 use TypeLang\Parser\Node\Stmt\IntersectionTypeNode;
 use TypeLang\Parser\Node\Stmt\NamedTypeNode;
 use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
+use TypeLang\Parser\Node\Stmt\TypeOffsetAccessNode;
 use TypeLang\Parser\Node\Stmt\TypesListNode;
 use TypeLang\Parser\Node\Stmt\UnionTypeNode;
 use TypeLang\Printer\Exception\NonPrintableNodeException;
@@ -288,6 +289,14 @@ class NativeTypePrinter extends PrettyPrinter
             return 'mixed';
         }
 
-        return parent::printLiteralNode($node);
+        return \get_debug_type($node->getRawValue());
+    }
+
+    #[\Override]
+    protected function printTypeOffsetAccessNode(TypeOffsetAccessNode $node): string
+    {
+        // Getting an offset requires information about the data from which the
+        // offset is needed. Therefore, we return a mixed type.
+        return 'mixed';
     }
 }
