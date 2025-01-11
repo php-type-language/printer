@@ -231,6 +231,7 @@ class NativeTypePrinter extends PrettyPrinter
     #[\Override]
     protected function printLiteralNode(LiteralNode $node): string
     {
+        /** @var non-empty-string */
         return match (true) {
             $node instanceof BoolLiteralNode => 'bool',
             $node instanceof FloatLiteralNode => 'float',
