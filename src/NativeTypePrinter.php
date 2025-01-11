@@ -41,10 +41,13 @@ class NativeTypePrinter extends PrettyPrinter
         parent::__construct($newLine, $indention);
 
         // preload phan type aliases
+        // @phpstan-ignore-next-line : PHPStan false-positive, not a bug
         $this->aliases += require __DIR__ . '/../resources/aliases/phan.php';
         // preload psalm type aliases
+        // @phpstan-ignore-next-line : PHPStan false-positive, not a bug
         $this->aliases += require __DIR__ . '/../resources/aliases/psalm.php';
         // preload phpstan type aliases
+        // @phpstan-ignore-next-line : PHPStan false-positive, not a bug
         $this->aliases += require __DIR__ . '/../resources/aliases/phpstan.php';
 
         foreach ($aliases as $alias => $type) {
@@ -142,6 +145,7 @@ class NativeTypePrinter extends PrettyPrinter
         $result = $this->formatUnionWithMixed($result);
         $result = $this->formatBoolWithTrueAndFalse($result);
 
+        /** @var non-empty-string */
         return \vsprintf($shouldWrap ? '(%s)' : '%s', [
             \implode('|', [...\array_unique($result)]),
         ]);
@@ -191,6 +195,7 @@ class NativeTypePrinter extends PrettyPrinter
     #[\Override]
     protected function printIntersectionTypeNode(IntersectionTypeNode $node): string
     {
+        /** @var non-empty-string */
         return \vsprintf($this->nesting++ > 0 ? '(%s)' : '%s', [
             \implode('&', [...$this->unwrapAndPrint($node)]),
         ]);

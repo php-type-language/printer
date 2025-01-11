@@ -475,6 +475,7 @@ class PrettyPrinter extends Printer
     {
         $delimiter = $this->wrapUnionType ? ' | ' : '|';
 
+        /** @var non-empty-string */
         return \vsprintf($this->nesting++ > 0 ? '(%s)' : '%s', [
             \implode($delimiter, [
                 ...$this->unwrapAndPrint($node),
@@ -491,6 +492,7 @@ class PrettyPrinter extends Printer
     {
         $delimiter = $this->wrapIntersectionType ? ' & ' : '&';
 
+        /** @var non-empty-string */
         return \vsprintf($this->nesting++ > 0 ? '(%s)' : '%s', [
             \implode($delimiter, [
                 ...$this->unwrapAndPrint($node),
