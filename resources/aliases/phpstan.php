@@ -43,7 +43,6 @@ return [
     'non-empty-list' => 'array',
     // object
     'callable-object' => 'object',
-    '$this' => 'object',
     // callable
     'pure-callable' => 'callable',
     'pure-closure' => '\Closure',

@@ -4,7 +4,12 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
+use TypeLang\Parser\Node\Literal\BoolLiteralNode;
+use TypeLang\Parser\Node\Literal\FloatLiteralNode;
+use TypeLang\Parser\Node\Literal\IntLiteralNode;
 use TypeLang\Parser\Node\Literal\LiteralNode;
+use TypeLang\Parser\Node\Literal\NullLiteralNode;
+use TypeLang\Parser\Node\Literal\StringLiteralNode;
 use TypeLang\Parser\Node\Literal\VariableLiteralNode;
 use TypeLang\Parser\Node\Stmt\CallableTypeNode;
 use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
@@ -226,15 +231,15 @@ class NativeTypePrinter extends PrettyPrinter
     #[\Override]
     protected function printLiteralNode(LiteralNode $node): string
     {
-        if ($node instanceof VariableLiteralNode) {
-            if ($node->getValue() === 'this') {
-                return 'self';
-            }
-
-            return 'mixed';
-        }
-
-        return \get_debug_type($node->getRawValue());
+        return match (true) {
+            $node instanceof BoolLiteralNode => 'bool',
+            $node instanceof FloatLiteralNode => 'float',
+            $node instanceof IntLiteralNode => 'int',
+            $node instanceof NullLiteralNode => 'null',
+            $node instanceof StringLiteralNode => 'string',
+            $node instanceof VariableLiteralNode => $node->getValue() === 'this' ? 'self' : 'mixed',
+            default => \get_debug_type($node->getValue()),
+        };
     }
 
     #[\Override]

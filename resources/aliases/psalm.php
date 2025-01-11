@@ -44,7 +44,6 @@ return [
     'private-properties-of' => 'array',
     'properties-of' => 'array',
     // object
-    '$this' => 'object',
     'callable-object' => 'object',
     'stringable-object' => '\Stringable',
     // callable
