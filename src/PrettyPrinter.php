@@ -25,6 +25,8 @@ use TypeLang\Parser\Node\Stmt\IntersectionTypeNode;
 use TypeLang\Parser\Node\Stmt\LogicalTypeNode;
 use TypeLang\Parser\Node\Stmt\NamedTypeNode;
 use TypeLang\Parser\Node\Stmt\NullableTypeNode;
+use TypeLang\Parser\Node\Stmt\Shape\ClassConstMaskFieldNode;
+use TypeLang\Parser\Node\Stmt\Shape\ConstMaskFieldNode;
 use TypeLang\Parser\Node\Stmt\Shape\FieldNode;
 use TypeLang\Parser\Node\Stmt\Shape\FieldsListNode;
 use TypeLang\Parser\Node\Stmt\Shape\NamedFieldNode;
@@ -289,11 +291,54 @@ class PrettyPrinter extends Printer
     protected function printShapeFieldName(FieldNode $field): string
     {
         return match (true) {
-            $field instanceof StringNamedFieldNode,
-            $field instanceof NumericFieldNode => $field->key->getRawValue(),
-            $field instanceof NamedFieldNode => $field->key->toString(),
-            default => '',
+            $field instanceof StringNamedFieldNode => $this->printStringShapeFieldName($field),
+            $field instanceof NumericFieldNode => $this->printNumericShapeFieldName($field),
+            $field instanceof NamedFieldNode => $this->printNamedShapeFieldName($field),
+            $field instanceof ConstMaskFieldNode => $this->printConstMaskShapeFieldName($field),
+            $field instanceof ClassConstMaskFieldNode => $this->printClassConstMaskShapeFieldName($field),
+            default => $this->printUnknownShapeFieldName($field),
         };
+    }
+
+    protected function printStringShapeFieldName(StringNamedFieldNode $field): string
+    {
+        return $field->key->getRawValue();
+    }
+
+    protected function printNumericShapeFieldName(NumericFieldNode $field): string
+    {
+        return $field->key->getRawValue();
+    }
+
+    protected function printNamedShapeFieldName(NamedFieldNode $field): string
+    {
+        return $field->key->toString();
+    }
+
+    protected function printConstMaskShapeFieldName(ConstMaskFieldNode $field): string
+    {
+        return $field->key->name->toString() . '*';
+    }
+
+    protected function printClassConstMaskShapeFieldName(ClassConstMaskFieldNode $field): string
+    {
+        $class = $field->key->class;
+        $constant = $field->key->constant;
+
+        if ($field->key instanceof ClassConstNode) {
+            return $class . '::' . $constant;
+        }
+
+        if ($constant === null) {
+            return $class . '::*';
+        }
+
+        return $class . '::' . $constant . '*';
+    }
+
+    protected function printUnknownShapeFieldName(FieldNode $field): string
+    {
+        return '';
     }
 
     /**
