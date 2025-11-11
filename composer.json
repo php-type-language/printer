@@ -10,7 +10,7 @@
     },
     "require": {
         "php": "^8.1",
-        "type-lang/parser": "^1.0"
+        "type-lang/parser": "^1.6"
     },
     "autoload": {
         "psr-4": {
@@ -18,10 +18,10 @@
         }
     },
     "require-dev": {
-        "friendsofphp/php-cs-fixer": "^3.53",
+        "friendsofphp/php-cs-fixer": "^3.89",
         "phpstan/phpstan": "^2.1",
         "phpstan/phpstan-strict-rules": "^2.0",
-        "phpunit/phpunit": "^10.5|^11.0"
+        "phpunit/phpunit": "^10.5|^11.0|^12.0"
     },
     "autoload-dev": {
         "psr-4": {
