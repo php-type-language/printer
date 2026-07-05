@@ -4,27 +4,27 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
-use TypeLang\Parser\Node\Literal\BoolLiteralNode;
-use TypeLang\Parser\Node\Literal\FloatLiteralNode;
-use TypeLang\Parser\Node\Literal\IntLiteralNode;
-use TypeLang\Parser\Node\Literal\LiteralNode;
-use TypeLang\Parser\Node\Literal\NullLiteralNode;
-use TypeLang\Parser\Node\Literal\StringLiteralNode;
-use TypeLang\Parser\Node\Literal\VariableLiteralNode;
-use TypeLang\Parser\Node\Stmt\CallableTypeNode;
-use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
-use TypeLang\Parser\Node\Stmt\ClassConstNode;
-use TypeLang\Parser\Node\Stmt\Condition\Condition;
-use TypeLang\Parser\Node\Stmt\Condition\EqualConditionNode;
-use TypeLang\Parser\Node\Stmt\Condition\NotEqualConditionNode;
-use TypeLang\Parser\Node\Stmt\ConstMaskNode;
-use TypeLang\Parser\Node\Stmt\IntersectionTypeNode;
-use TypeLang\Parser\Node\Stmt\NamedTypeNode;
-use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
-use TypeLang\Parser\Node\Stmt\TypeOffsetAccessNode;
-use TypeLang\Parser\Node\Stmt\TypesListNode;
-use TypeLang\Parser\Node\Stmt\UnionTypeNode;
 use TypeLang\Printer\Exception\NonPrintableNodeException;
+use TypeLang\Type\CallableTypeNode;
+use TypeLang\Type\ClassConstMaskNode;
+use TypeLang\Type\ClassConstNode;
+use TypeLang\Type\Condition\Condition;
+use TypeLang\Type\Condition\EqualConditionNode;
+use TypeLang\Type\Condition\NotEqualConditionNode;
+use TypeLang\Type\ConstMaskNode;
+use TypeLang\Type\IntersectionTypeNode;
+use TypeLang\Type\Literal\BoolLiteralNode;
+use TypeLang\Type\Literal\FloatLiteralNode;
+use TypeLang\Type\Literal\IntLiteralNode;
+use TypeLang\Type\Literal\LiteralNode;
+use TypeLang\Type\Literal\NullLiteralNode;
+use TypeLang\Type\Literal\StringLiteralNode;
+use TypeLang\Type\Literal\VariableLiteralNode;
+use TypeLang\Type\NamedTypeNode;
+use TypeLang\Type\TernaryExpressionNode;
+use TypeLang\Type\TypeOffsetAccessNode;
+use TypeLang\Type\TypesListNode;
+use TypeLang\Type\UnionTypeNode;
 
 class NativeTypePrinter extends PrettyPrinter
 {
@@ -107,7 +107,7 @@ class NativeTypePrinter extends PrettyPrinter
     }
 
     #[\Override]
-    protected function printTernaryType(TernaryConditionNode $node): string
+    protected function printTernaryType(TernaryExpressionNode $node): string
     {
         return $this->make(new UnionTypeNode($node->then, $node->else));
     }
@@ -160,7 +160,6 @@ class NativeTypePrinter extends PrettyPrinter
      * Replace "true" + "false" pair into "bool"
      *
      * @param list<non-empty-string> $result
-     *
      * @return list<non-empty-string>
      */
     private function formatBoolWithTrueAndFalse(array $result): array
@@ -185,7 +184,6 @@ class NativeTypePrinter extends PrettyPrinter
      * if one of the types is "mixed".
      *
      * @param list<non-empty-string> $result
-     *
      * @return list<non-empty-string>
      */
     private function formatUnionWithMixed(array $result): array
@@ -214,7 +212,6 @@ class NativeTypePrinter extends PrettyPrinter
 
     /**
      * @param non-empty-string $name
-     *
      * @return non-empty-string
      */
     protected function getTypeName(string $name): string
@@ -238,8 +235,8 @@ class NativeTypePrinter extends PrettyPrinter
             $node instanceof IntLiteralNode => 'int',
             $node instanceof NullLiteralNode => 'null',
             $node instanceof StringLiteralNode => 'string',
-            $node instanceof VariableLiteralNode => $node->getValue() === 'this' ? 'self' : 'mixed',
-            default => \get_debug_type($node->getValue()),
+            $node instanceof VariableLiteralNode => $node->value === 'this' ? 'self' : 'mixed',
+            default => \get_debug_type($node->value),
         };
     }
 

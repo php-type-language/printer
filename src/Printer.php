@@ -4,21 +4,20 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
-use TypeLang\Parser\Node\Statement;
-use TypeLang\Parser\Node\Stmt\LogicalTypeNode;
-use TypeLang\Parser\Node\Stmt\TypeStatement;
+use TypeLang\Type\LogicalTypeNode;
+use TypeLang\Type\TypeNode;
 
 abstract class Printer implements PrinterInterface
 {
     /**
      * @var non-empty-string
      */
-    protected const DEFAULT_NEW_LINE_DELIMITER = "\n";
+    protected const string DEFAULT_NEW_LINE_DELIMITER = "\n";
 
     /**
      * @var non-empty-string
      */
-    protected const DEFAULT_INDENTION = '    ';
+    protected const string DEFAULT_INDENTION = '    ';
 
     /**
      * @var int<0, max>
@@ -41,7 +40,7 @@ abstract class Printer implements PrinterInterface
         public readonly string $indention = self::DEFAULT_INDENTION,
     ) {}
 
-    public function print(Statement $stmt): string
+    public function print(TypeNode $stmt): string
     {
         $this->nesting = $this->depth = 0;
 
@@ -51,7 +50,7 @@ abstract class Printer implements PrinterInterface
     /**
      * @return non-empty-string
      */
-    abstract protected function make(Statement $stmt): string;
+    abstract protected function make(TypeNode $stmt): string;
 
     /**
      * @param int<0, max>|null $depth
@@ -69,9 +68,7 @@ abstract class Printer implements PrinterInterface
 
     /**
      * @template TResult of mixed
-     *
      * @param callable():TResult $section
-     *
      * @return TResult
      */
     protected function nested(callable $section): mixed
@@ -86,8 +83,7 @@ abstract class Printer implements PrinterInterface
     }
 
     /**
-     * @param LogicalTypeNode<TypeStatement> $stmt
-     *
+     * @param LogicalTypeNode<TypeNode> $stmt
      * @return list<non-empty-string>
      */
     protected function unwrapAndPrint(LogicalTypeNode $stmt): iterable
@@ -96,8 +92,7 @@ abstract class Printer implements PrinterInterface
     }
 
     /**
-     * @param iterable<mixed, Statement> $stmts
-     *
+     * @param iterable<mixed, TypeNode> $stmts
      * @return list<non-empty-string>
      */
     protected function printMap(iterable $stmts): array
@@ -113,10 +108,8 @@ abstract class Printer implements PrinterInterface
     }
 
     /**
-     * @template T of TypeStatement
-     *
+     * @template T of TypeNode
      * @param LogicalTypeNode<T> $logical
-     *
      * @return iterable<array-key, T>
      */
     protected function unwrap(LogicalTypeNode $logical): iterable

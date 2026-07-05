@@ -4,66 +4,56 @@ declare(strict_types=1);
 
 namespace TypeLang\Printer;
 
-use TypeLang\Parser\Node\Literal\LiteralNode;
-use TypeLang\Parser\Node\Node;
-use TypeLang\Parser\Node\Statement;
-use TypeLang\Parser\Node\Stmt\Attribute\AttributeGroupNode;
-use TypeLang\Parser\Node\Stmt\Attribute\AttributeGroupsListNode;
-use TypeLang\Parser\Node\Stmt\Callable\ParameterNode;
-use TypeLang\Parser\Node\Stmt\CallableTypeNode;
-use TypeLang\Parser\Node\Stmt\ClassConstMaskNode;
-use TypeLang\Parser\Node\Stmt\ClassConstNode;
-use TypeLang\Parser\Node\Stmt\Condition\Condition;
-use TypeLang\Parser\Node\Stmt\Condition\EqualConditionNode;
-use TypeLang\Parser\Node\Stmt\Condition\GreaterOrEqualThanConditionNode;
-use TypeLang\Parser\Node\Stmt\Condition\GreaterThanConditionNode;
-use TypeLang\Parser\Node\Stmt\Condition\LessOrEqualThanConditionNode;
-use TypeLang\Parser\Node\Stmt\Condition\LessThanConditionNode;
-use TypeLang\Parser\Node\Stmt\Condition\NotEqualConditionNode;
-use TypeLang\Parser\Node\Stmt\ConstMaskNode;
-use TypeLang\Parser\Node\Stmt\IntersectionTypeNode;
-use TypeLang\Parser\Node\Stmt\LogicalTypeNode;
-use TypeLang\Parser\Node\Stmt\NamedTypeNode;
-use TypeLang\Parser\Node\Stmt\NullableTypeNode;
-use TypeLang\Parser\Node\Stmt\Shape\ClassConstMaskFieldNode;
-use TypeLang\Parser\Node\Stmt\Shape\ConstMaskFieldNode;
-use TypeLang\Parser\Node\Stmt\Shape\FieldNode;
-use TypeLang\Parser\Node\Stmt\Shape\FieldsListNode;
-use TypeLang\Parser\Node\Stmt\Shape\NamedFieldNode;
-use TypeLang\Parser\Node\Stmt\Shape\NumericFieldNode;
-use TypeLang\Parser\Node\Stmt\Shape\StringNamedFieldNode;
-use TypeLang\Parser\Node\Stmt\Template\ArgumentNode;
-use TypeLang\Parser\Node\Stmt\Template\ArgumentsListNode;
-use TypeLang\Parser\Node\Stmt\Template\TemplateArgumentsListNode;
-use TypeLang\Parser\Node\Stmt\TernaryConditionNode;
-use TypeLang\Parser\Node\Stmt\TypeOffsetAccessNode;
-use TypeLang\Parser\Node\Stmt\TypesListNode;
-use TypeLang\Parser\Node\Stmt\TypeStatement;
-use TypeLang\Parser\Node\Stmt\UnionTypeNode;
 use TypeLang\Parser\Traverser;
 use TypeLang\Printer\Exception\NonPrintableNodeException;
+use TypeLang\Type\Attribute\AttributeGroupListNode;
+use TypeLang\Type\Attribute\AttributeGroupNode;
+use TypeLang\Type\Callable\CallableParameterNode;
+use TypeLang\Type\CallableTypeNode;
+use TypeLang\Type\ClassConstMaskNode;
+use TypeLang\Type\ClassConstNode;
+use TypeLang\Type\Condition\Condition;
+use TypeLang\Type\Condition\EqualConditionNode;
+use TypeLang\Type\Condition\GreaterThanConditionNode;
+use TypeLang\Type\Condition\GreaterThanOrEqualConditionNode;
+use TypeLang\Type\Condition\LessThanConditionNode;
+use TypeLang\Type\Condition\LessThanOrEqualConditionNode;
+use TypeLang\Type\Condition\NotEqualConditionNode;
+use TypeLang\Type\ConstMaskNode;
+use TypeLang\Type\IntersectionTypeNode;
+use TypeLang\Type\Literal\LiteralNode;
+use TypeLang\Type\LogicalTypeNode;
+use TypeLang\Type\NamedTypeNode;
+use TypeLang\Type\Node;
+use TypeLang\Type\NullableTypeNode;
+use TypeLang\Type\Shape\ClassConstFieldNode;
+use TypeLang\Type\Shape\ClassConstMaskFieldNode;
+use TypeLang\Type\Shape\ConstMaskFieldNode;
+use TypeLang\Type\Shape\FieldNode;
+use TypeLang\Type\Shape\FieldsListNode;
+use TypeLang\Type\Shape\NamedFieldNode;
+use TypeLang\Type\Shape\NumericFieldNode;
+use TypeLang\Type\Shape\StringNamedFieldNode;
+use TypeLang\Type\Template\TemplateArgumentListNode;
+use TypeLang\Type\Template\TemplateArgumentNode;
+use TypeLang\Type\TernaryExpressionNode;
+use TypeLang\Type\TypeNode;
+use TypeLang\Type\TypeOffsetAccessNode;
+use TypeLang\Type\TypesListNode;
+use TypeLang\Type\UnionTypeNode;
 
 class PrettyPrinter extends Printer
 {
-    /**
-     * @var bool
-     */
-    public const DEFAULT_WRAP_INTERSECTION_TYPE = true;
+    public const bool DEFAULT_WRAP_INTERSECTION_TYPE = true;
 
-    /**
-     * @var bool
-     */
-    public const DEFAULT_WRAP_UNION_TYPE = true;
+    public const bool DEFAULT_WRAP_UNION_TYPE = true;
 
-    /**
-     * @var bool
-     */
-    public const DEFAULT_WRAP_CALLABLE_RETURN_TYPE = true;
+    public const bool DEFAULT_WRAP_CALLABLE_RETURN_TYPE = true;
 
     /**
      * @var int<0, max>
      */
-    public const DEFAULT_MULTILINE_SHAPE = 1;
+    public const int DEFAULT_MULTILINE_SHAPE = 1;
 
     /**
      * @param non-empty-string $newLine
@@ -131,10 +121,9 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function make(Statement $stmt): string
+    protected function make(TypeNode $stmt): string
     {
         return match (true) {
             $stmt instanceof LiteralNode => $this->printLiteralNode($stmt),
@@ -146,7 +135,7 @@ class PrettyPrinter extends Printer
             $stmt instanceof UnionTypeNode => $this->printUnionTypeNode($stmt),
             $stmt instanceof IntersectionTypeNode => $this->printIntersectionTypeNode($stmt),
             $stmt instanceof NullableTypeNode => $this->printNullableType($stmt),
-            $stmt instanceof TernaryConditionNode => $this->printTernaryType($stmt),
+            $stmt instanceof TernaryExpressionNode => $this->printTernaryType($stmt),
             $stmt instanceof TypesListNode => $this->printTypeListNode($stmt),
             $stmt instanceof TypeOffsetAccessNode => $this->printTypeOffsetAccessNode($stmt),
             default => throw NonPrintableNodeException::fromInvalidNode($stmt),
@@ -155,13 +144,10 @@ class PrettyPrinter extends Printer
 
     /**
      * @param LiteralNode<mixed> $node
-     *
-     * @return non-empty-string
      */
     protected function printLiteralNode(LiteralNode $node): string
     {
-        /** @var non-empty-string */
-        return $node->getRawValue();
+        return $node->raw;
     }
 
     /**
@@ -236,7 +222,7 @@ class PrettyPrinter extends Printer
         return $fields;
     }
 
-    protected function printAttributeGroups(AttributeGroupsListNode $groups, bool $multiline): string
+    protected function printAttributeGroups(AttributeGroupListNode $groups, bool $multiline): string
     {
         $prefix = $this->prefix();
         $result = '';
@@ -253,7 +239,7 @@ class PrettyPrinter extends Printer
     {
         $result = '#[';
 
-        $last = $group->last();
+        $last = $group->last;
         foreach ($group as $attribute) {
             $result .= $attribute->name->toString();
 
@@ -274,18 +260,18 @@ class PrettyPrinter extends Printer
         $name = $this->printShapeFieldName($field);
 
         if ($name !== '') {
-            if ($field->optional) {
+            if ($field->isOptional) {
                 $name .= '?';
             }
 
             return \vsprintf('%s: %s', [
                 $name,
-                $this->make($field->getType()),
+                $this->make($field->type),
             ]);
         }
 
         /** @var non-empty-string */
-        return $this->make($field->getType());
+        return $this->make($field->type);
     }
 
     protected function printShapeFieldName(FieldNode $field): string
@@ -296,18 +282,19 @@ class PrettyPrinter extends Printer
             $field instanceof NamedFieldNode => $this->printNamedShapeFieldName($field),
             $field instanceof ConstMaskFieldNode => $this->printConstMaskShapeFieldName($field),
             $field instanceof ClassConstMaskFieldNode => $this->printClassConstMaskShapeFieldName($field),
+            $field instanceof ClassConstFieldNode => $this->printClassConstShapeFieldName($field),
             default => $this->printUnknownShapeFieldName($field),
         };
     }
 
     protected function printStringShapeFieldName(StringNamedFieldNode $field): string
     {
-        return $field->key->getRawValue();
+        return $field->key->raw;
     }
 
     protected function printNumericShapeFieldName(NumericFieldNode $field): string
     {
-        return $field->key->getRawValue();
+        return $field->key->raw;
     }
 
     protected function printNamedShapeFieldName(NamedFieldNode $field): string
@@ -320,20 +307,20 @@ class PrettyPrinter extends Printer
         return $field->key->name->toString() . '*';
     }
 
+    protected function printClassConstShapeFieldName(ClassConstFieldNode $field): string
+    {
+        return \sprintf('%s::%s', $field->key->class, $field->key->constant);
+    }
+
     protected function printClassConstMaskShapeFieldName(ClassConstMaskFieldNode $field): string
     {
-        $class = $field->key->class;
         $constant = $field->key->constant;
 
-        if ($field->key instanceof ClassConstNode) {
-            return $class . '::' . $constant;
-        }
-
         if ($constant === null) {
-            return $class . '::*';
+            return \sprintf('%s::*', $field->key->class);
         }
 
-        return $class . '::' . $constant . '*';
+        return \sprintf('%s::%s*', $field->key->class, $constant);
     }
 
     protected function printUnknownShapeFieldName(FieldNode $field): string
@@ -342,12 +329,11 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @param ArgumentsListNode<ArgumentNode>|TemplateArgumentsListNode $arguments
-     *
+     * @param TemplateArgumentListNode<TemplateArgumentNode>|TemplateArgumentListNode $arguments
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function printTemplateArgumentsNode(ArgumentsListNode $arguments): string
+    protected function printTemplateArgumentsNode(TemplateArgumentListNode $arguments): string
     {
         $result = [];
 
@@ -368,7 +354,7 @@ class PrettyPrinter extends Printer
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function printTemplateArgumentNode(ArgumentNode $argument): string
+    protected function printTemplateArgumentNode(TemplateArgumentNode $argument): string
     {
         $result = $this->make($argument->value);
 
@@ -445,7 +431,7 @@ class PrettyPrinter extends Printer
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function printCallableArgumentNode(ParameterNode $node): string
+    protected function printCallableArgumentNode(CallableParameterNode $node): string
     {
         $result = 'mixed';
 
@@ -462,11 +448,11 @@ class PrettyPrinter extends Printer
             $result .= ' ';
         }
 
-        if ($node->output) {
+        if ($node->isOutput) {
             $result .= '&';
         }
 
-        if ($node->variadic) {
+        if ($node->isVariadic) {
             $result .= '...';
         }
 
@@ -475,14 +461,14 @@ class PrettyPrinter extends Printer
             $result .= $this->printLiteralNode($node->name);
         }
 
-        if ($node->optional) {
+        if ($node->isOptional) {
             $result .= '=';
         }
 
         return $result;
     }
 
-    protected function shouldWrapReturnType(TypeStatement $type): bool
+    protected function shouldWrapReturnType(TypeNode $type): bool
     {
         if ($type instanceof LogicalTypeNode) {
             return true;
@@ -512,8 +498,7 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @param UnionTypeNode<TypeStatement> $node
-     *
+     * @param UnionTypeNode<TypeNode> $node
      * @return non-empty-string
      */
     protected function printUnionTypeNode(UnionTypeNode $node): string
@@ -529,8 +514,7 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @param IntersectionTypeNode<TypeStatement> $node
-     *
+     * @param IntersectionTypeNode<TypeNode> $node
      * @return non-empty-string
      */
     protected function printIntersectionTypeNode(IntersectionTypeNode $node): string
@@ -546,8 +530,7 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @param NullableTypeNode<TypeStatement> $node
-     *
+     * @param NullableTypeNode<TypeNode> $node
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
@@ -560,7 +543,7 @@ class PrettyPrinter extends Printer
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
-    protected function printTernaryType(TernaryConditionNode $node): string
+    protected function printTernaryType(TernaryExpressionNode $node): string
     {
         return \vsprintf('(%s %s %s ? %s : %s)', [
             $this->make($node->condition->subject),
@@ -580,8 +563,8 @@ class PrettyPrinter extends Printer
         return match (true) {
             $node instanceof EqualConditionNode => 'is',
             $node instanceof NotEqualConditionNode => 'is not',
-            $node instanceof GreaterOrEqualThanConditionNode => '>=',
-            $node instanceof LessOrEqualThanConditionNode => '<=',
+            $node instanceof GreaterThanOrEqualConditionNode => '>=',
+            $node instanceof LessThanOrEqualConditionNode => '<=',
             $node instanceof GreaterThanConditionNode => '>',
             $node instanceof LessThanConditionNode => '<',
             default => throw NonPrintableNodeException::fromInvalidNode($node),
@@ -589,8 +572,7 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @param TypesListNode<TypeStatement> $node
-     *
+     * @param TypesListNode<TypeNode> $node
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
@@ -602,8 +584,7 @@ class PrettyPrinter extends Printer
     }
 
     /**
-     * @param TypeOffsetAccessNode<TypeStatement> $node
-     *
+     * @param TypeOffsetAccessNode<TypeNode> $node
      * @return non-empty-string
      * @throws NonPrintableNodeException
      */
