@@ -7,11 +7,9 @@ namespace TypeLang\Printer;
 use TypeLang\Printer\NodePrinter\Callable\CallableParameterNodePrinter;
 use TypeLang\Printer\NodePrinter\Callable\CallableTypeNodePrinter;
 use TypeLang\Printer\NodePrinter\Condition\ConditionalTypeNodePrinter;
-use TypeLang\Printer\NodePrinter\Condition\ConditionNodePrinter\EqualConditionNodePrinter;
-use TypeLang\Printer\NodePrinter\Condition\ConditionNodePrinter\NotEqualConditionNodePrinter;
-use TypeLang\Printer\NodePrinter\Constant\ClassConstMaskTypeNodePrinter;
-use TypeLang\Printer\NodePrinter\Constant\ClassConstTypeNodePrinter;
+use TypeLang\Printer\NodePrinter\Condition\ConditionNodePrinter;
 use TypeLang\Printer\NodePrinter\Constant\ConstMaskTypeNodePrinter;
+use TypeLang\Printer\NodePrinter\Constant\ConstTypeNodePrinter;
 use TypeLang\Printer\NodePrinter\LiteralNodePrinter;
 use TypeLang\Printer\NodePrinter\LogicalTypeNodePrinter\IntersectionTypeNodePrinter;
 use TypeLang\Printer\NodePrinter\LogicalTypeNodePrinter\UnionTypeNodePrinter;
@@ -35,11 +33,9 @@ use TypeLang\Printer\NodePrinter\VariableNodePrinter;
 use TypeLang\Type\Callable\CallableParameterNode;
 use TypeLang\Type\Callable\CallableTypeNode;
 use TypeLang\Type\Condition\ConditionalTypeNode;
-use TypeLang\Type\Condition\EqualConditionNode;
-use TypeLang\Type\Condition\NotEqualConditionNode;
-use TypeLang\Type\Constant\ClassConstMaskTypeNode;
-use TypeLang\Type\Constant\ClassConstTypeNode;
+use TypeLang\Type\Condition\ConditionNode;
 use TypeLang\Type\Constant\ConstMaskTypeNode;
+use TypeLang\Type\Constant\ConstTypeNode;
 use TypeLang\Type\Literal\LiteralNode;
 use TypeLang\Type\LogicalTypeNode\IntersectionTypeNode;
 use TypeLang\Type\LogicalTypeNode\UnionTypeNode;
@@ -56,9 +52,9 @@ use TypeLang\Type\Template\TypedTemplateArgumentNode;
 use TypeLang\Type\Template\WildcardTemplateArgumentNode;
 use TypeLang\Type\ThisTypeNode;
 use TypeLang\Type\TypeNode;
+use TypeLang\Type\TypeOffsetAccessTypeNode;
 use TypeLang\Type\VariableNode;
 use TypeLang\Type\WrappingTypeNode\NullableTypeNode;
-use TypeLang\Type\WrappingTypeNode\TypeOffsetAccessTypeNode;
 use TypeLang\Type\WrappingTypeNode\TypesListTypeNode;
 
 /**
@@ -93,15 +89,13 @@ final class PrettyTypePrinter implements TypePrinterInterface
             CallableTypeNode::class => new CallableTypeNodePrinter(),
             CallableParameterNode::class => new CallableParameterNodePrinter(),
             ConditionalTypeNode::class => new ConditionalTypeNodePrinter(),
-            EqualConditionNode::class => new EqualConditionNodePrinter(),
-            NotEqualConditionNode::class => new NotEqualConditionNodePrinter(),
+            ConditionNode::class => new ConditionNodePrinter(),
             UnionTypeNode::class => new UnionTypeNodePrinter(),
             IntersectionTypeNode::class => new IntersectionTypeNodePrinter(),
             NullableTypeNode::class => new NullableTypeNodePrinter(),
             TypesListTypeNode::class => new TypesListTypeNodePrinter(),
             TypeOffsetAccessTypeNode::class => new TypeOffsetAccessTypeNodePrinter(),
-            ClassConstTypeNode::class => new ClassConstTypeNodePrinter(),
-            ClassConstMaskTypeNode::class => new ClassConstMaskTypeNodePrinter(),
+            ConstTypeNode::class => new ConstTypeNodePrinter(),
             ConstMaskTypeNode::class => new ConstMaskTypeNodePrinter(),
             NamedFieldNode::class => new NamedFieldNodePrinter(),
             ScalarFieldNode::class => new ScalarFieldNodePrinter(),

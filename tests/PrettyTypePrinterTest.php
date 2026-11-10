@@ -18,7 +18,6 @@ use TypeLang\Printer\PrinterOptions\ListStyle;
 use TypeLang\Type\Callable\CallableParameterListNode;
 use TypeLang\Type\Callable\CallableParameterNode;
 use TypeLang\Type\Callable\CallableTypeNode;
-use TypeLang\Type\Constant\ClassConstMaskTypeNode;
 use TypeLang\Type\Constant\ConstMaskTypeNode;
 use TypeLang\Type\Constant\MaskNode;
 use TypeLang\Type\Constant\MaskNode\WildcardMaskNode;
@@ -33,8 +32,8 @@ use TypeLang\Type\Shape\NamedFieldNode;
 use TypeLang\Type\Template\TemplateListNode;
 use TypeLang\Type\Template\TypedTemplateArgumentNode;
 use TypeLang\Type\TypeNode;
+use TypeLang\Type\TypeOffsetAccessTypeNode;
 use TypeLang\Type\WrappingTypeNode\NullableTypeNode;
-use TypeLang\Type\WrappingTypeNode\TypeOffsetAccessTypeNode;
 use TypeLang\Type\WrappingTypeNode\TypesListTypeNode;
 
 #[CoversClass(PrettyTypePrinter::class)]
@@ -225,14 +224,14 @@ final class PrettyTypePrinterTest extends TestCase
 
     public function testPrintClassConstantWildcardMaskShapeKey(): void
     {
-        $key = new ClassConstMaskTypeNode(new Name('Foo'), new MaskNode([new WildcardMaskNode()]));
+        $key = new ConstMaskTypeNode(new Name('Foo'), new MaskNode([new WildcardMaskNode()]));
 
         self::assertSame('array{Foo::*: int}', $this->printer()->print(self::shapeWithKey($key)));
     }
 
     public function testPrintClassConstantPrefixMaskShapeKey(): void
     {
-        $key = new ClassConstMaskTypeNode(
+        $key = new ConstMaskTypeNode(
             new Name('Foo'),
             new MaskNode([new Identifier('BAR_'), new WildcardMaskNode()]),
         );
@@ -242,7 +241,7 @@ final class PrettyTypePrinterTest extends TestCase
 
     public function testPrintConstantMaskShapeKey(): void
     {
-        $key = new ConstMaskTypeNode(new MaskNode([new Identifier('FOO_'), new WildcardMaskNode()]));
+        $key = new ConstMaskTypeNode(null, new MaskNode([new Identifier('FOO_'), new WildcardMaskNode()]));
 
         self::assertSame('array{FOO_*: int}', $this->printer()->print(self::shapeWithKey($key)));
     }

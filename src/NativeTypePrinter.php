@@ -17,17 +17,16 @@ use TypeLang\Printer\NodePrinter\Registry\CachedNodePrinterRegistry;
 use TypeLang\Printer\NodePrinter\Registry\NodePrinterRegistry;
 use TypeLang\Type\Callable\CallableTypeNode;
 use TypeLang\Type\Condition\ConditionalTypeNode;
-use TypeLang\Type\Constant\ClassConstMaskTypeNode;
-use TypeLang\Type\Constant\ClassConstTypeNode;
 use TypeLang\Type\Constant\ConstMaskTypeNode;
+use TypeLang\Type\Constant\ConstTypeNode;
 use TypeLang\Type\Literal\LiteralNode;
 use TypeLang\Type\LogicalTypeNode\IntersectionTypeNode;
 use TypeLang\Type\LogicalTypeNode\UnionTypeNode;
 use TypeLang\Type\NamedTypeNode;
 use TypeLang\Type\ThisTypeNode;
 use TypeLang\Type\TypeNode;
+use TypeLang\Type\TypeOffsetAccessTypeNode;
 use TypeLang\Type\WrappingTypeNode\NullableTypeNode;
-use TypeLang\Type\WrappingTypeNode\TypeOffsetAccessTypeNode;
 use TypeLang\Type\WrappingTypeNode\TypesListTypeNode;
 
 /**
@@ -71,8 +70,7 @@ final class NativeTypePrinter implements TypePrinterInterface
             ->with(ThisTypeNode::class, new NativeFixedNodePrinter('self'))
             ->with(TypesListTypeNode::class, new NativeFixedNodePrinter('iterable'))
             ->with(TypeOffsetAccessTypeNode::class, new NativeFixedNodePrinter('mixed'))
-            ->with(ClassConstTypeNode::class, new NativeFixedNodePrinter('mixed'))
-            ->with(ClassConstMaskTypeNode::class, new NativeFixedNodePrinter('mixed'))
+            ->with(ConstTypeNode::class, new NativeFixedNodePrinter('mixed'))
             ->with(ConstMaskTypeNode::class, new NativeFixedNodePrinter('mixed'));
     }
 
